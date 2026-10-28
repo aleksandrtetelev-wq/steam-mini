@@ -4,458 +4,582 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Steam Top-Up</title>
-    <!-- Подключаем Telegram WebApp API -->
+    <!-- Подключаем официальный SDK Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #1c1d22;
-            --card-bg: #2b2d36;
-            --text-main: #ffffff;
-            --text-muted: #aaaaaa;
-            --accent-blue: #2aabee;
-            --accent-green: #2ecc71;
-            --border-color: #3f414a;
+            /* Цвета из темы Telegram по умолчанию, но подкрученные */
+            --tg-bg: #1c1d22;
+            --tg-card: #2b2d36;
+            --tg-text: #ffffff;
+            --tg-hint: #aaaaaa;
+            --tg-accent: #2aabee;
+            --tg-success: #2ecc71;
+            --tg-border: #3f414a;
+            
+            /* Градиенты для красоты */
+            --gradient-primary: linear-gradient(135deg, #2aabee 0%, #1e8bc0 100%);
+            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--tg-bg);
+            color: var(--tg-text);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* Хедер */
         header {
-            padding: 16px;
-            background-color: rgba(43, 45, 54, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             position: sticky;
             top: 0;
             z-index: 100;
+            background: rgba(43, 45, 54, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--tg-border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .back-btn {
-            background: transparent;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
             border: none;
-            color: var(--text-main);
-            font-size: 24px;
+            color: white;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            opacity: 0.5;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
-        .back-btn:hover { opacity: 1; }
-        .back-btn.disabled { pointer-events: none; opacity: 0.2; }
+        .back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
+        .back-btn.hidden { visibility: hidden; }
 
-        h1 { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
-
-        /* Основной контент */
+        /* Основной контейнер */
         main {
-            flex: 1;
             padding: 16px;
             max-width: 500px;
             margin: 0 auto;
-            width: 100%;
+            animation: slideUp 0.4s ease-out;
         }
 
-        .screen { display: none; animation: fadeIn 0.3s ease-out; }
-        .screen.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         /* Карточки */
         .card {
-            background-color: var(--card-bg);
+            background-color: var(--tg-card);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 16px;
-            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        label {
-            display: block;
-            font-size: 14px;
-            color: var(--text-muted);
+        .label {
+            font-size: 13px;
+            color: var(--tg-hint);
             margin-bottom: 8px;
-            font-weight: 500;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        /* Инпуты */
+        .input-group {
+            position: relative;
         }
 
         input[type="text"], input[type="number"] {
             width: 100%;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 14px;
-            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--tg-border);
+            color: white;
+            padding: 14px 16px;
+            border-radius: 12px;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        input:focus { border-color: var(--accent-blue); }
+
+        input:focus {
+            border-color: var(--tg-accent);
+            box-shadow: 0 0 0 3px rgba(42, 171, 238, 0.15);
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--tg-hint);
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        input.with-prefix {
+            padding-left: 32px;
+        }
 
         /* Быстрые суммы */
-        .quick-amounts {
+        .quick-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             margin-top: 12px;
         }
-        .qa-btn {
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
+
+        .chip {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--tg-border);
+            color: var(--tg-hint);
             padding: 10px 0;
-            border-radius: 8px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 600;
+            text-align: center;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .qa-btn.selected {
-            background-color: var(--accent-blue);
+
+        .chip.active {
+            background: var(--tg-accent);
+            border-color: var(--tg-accent);
             color: white;
-            border-color: var(--accent-blue);
-            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(42, 171, 238, 0.3);
+            transform: translateY(-2px);
         }
 
-        /* Итоговая цена */
-        .summary-row {
+        .chip:active { transform: scale(0.95); }
+
+        /* Итоги */
+        .summary-list {
+            list-style: none;
+            margin-top: 16px;
+            border-top: 1px solid var(--tg-border);
+            padding-top: 16px;
+        }
+
+        .summary-item {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
             font-size: 14px;
-            color: var(--text-muted);
+            color: var(--tg-hint);
         }
-        .total-row {
+
+        .summary-total {
             display: flex;
             justify-content: space-between;
             margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border-color);
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
         }
-        .price-highlight { color: var(--accent-green); }
 
-        /* Кнопки действий */
-        .btn-primary {
+        .total-value {
+            color: var(--tg-success);
+        }
+
+        /* Кнопки */
+        .btn-main {
             width: 100%;
-            background-color: var(--accent-blue);
+            background: var(--gradient-primary);
             color: white;
             border: none;
             padding: 16px;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.2s, transform 0.1s;
-        }
-        .btn-primary:active { transform: scale(0.98); }
-        .btn-success { background-color: var(--accent-green); }
-        .btn-secondary { background-color: var(--border-color); color: white; }
-
-        /* Экран успеха */
-        .success-icon {
-            font-size: 64px;
-            text-align: center;
-            margin: 20px 0;
-            color: var(--accent-green);
-        }
-        .code-box {
-            background-color: var(--bg-color);
-            border: 1px dashed var(--accent-green);
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-            font-family: monospace;
-            font-size: 18px;
-            word-break: break-all;
-            margin: 16px 0;
-            position: relative;
-        }
-        .copy-hint {
-            font-size: 12px;
-            color: var(--text-muted);
+            box-shadow: 0 4px 15px rgba(42, 171, 238, 0.4);
+            transition: all 0.2s;
             margin-top: 8px;
-            text-align: center;
         }
+
+        .btn-main:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(42, 171, 238, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            box-shadow: none;
+            margin-top: 12px;
+        }
+
+        /* Экраны */
+        .screen { display: none; }
+        .screen.active { display: block; }
 
         /* Лоадер */
-        .loader-container {
+        .loader-wrap {
             height: 60vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--accent-blue);
+        
+        .spinner-circle {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--tg-accent);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
             margin-bottom: 16px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Успех */
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 4px 10px rgba(46, 204, 113, 0.3));
+        }
+
+        .code-display {
+            background: rgba(0,0,0,0.3);
+            border: 1px dashed var(--tg-success);
+            padding: 16px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-align: center;
+            word-break: break-all;
+            margin: 16px 0;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .copy-tooltip {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tg-success);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .code-display.copied .copy-tooltip { opacity: 1; }
 
     </style>
 </head>
 <body>
 
     <header>
-        <button id="backBtn" class="back-btn disabled" onclick="goBack()">←</button>
-        <h1>Steam Top-Up</h1>
-        <div style="width: 24px;"></div> <!-- Плейсхолдер для центрирования -->
+        <button id="backBtn" class="back-btn hidden">←</button>
+        <div class="header-title">Steam Top-Up</div>
+        <div style="width: 32px;"></div> <!-- Balance for centering -->
     </header>
 
     <main>
-        <!-- ЭКРАН 1: ГЛАВНАЯ -->
-        <div id="screen-home" class="screen active">
+        <!-- HOME SCREEN -->
+        <section id="homeScreen" class="screen active">
             <div class="card">
-                <label for="loginInput">Логин Steam</label>
-                <input type="text" id="loginInput" placeholder="Например: Gamer_Pro">
+                <span class="label">Логин Steam</span>
+                <div class="input-group">
+                    <input type="text" id="steamLogin" placeholder="Введите ваш никнейм">
+                </div>
             </div>
 
             <div class="card">
-                <label for="amountInput">Сумма пополнения ($)</label>
-                <input type="number" id="amountInput" value="10" min="5" max="500">
+                <span class="label">Сумма пополнения ($)</span>
+                <div class="input-group">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="amountInput" value="10" class="with-prefix" min="5" max="500">
+                </div>
                 
-                <div class="quick-amounts">
-                    <button class="qa-btn selected" data-val="5">$5</button>
-                    <button class="qa-btn" data-val="10">$10</button>
-                    <button class="qa-btn" data-val="20">$20</button>
-                    <button class="qa-btn" data-val="50">$50</button>
+                <div class="quick-grid" id="quickAmounts">
+                    <div class="chip" data-val="5">$5</div>
+                    <div class="chip active" data-val="10">$10</div>
+                    <div class="chip" data-val="20">$20</div>
+                    <div class="chip" data-val="50">$50</div>
                 </div>
             </div>
 
-            <div class="card" style="background: transparent; border: none; padding: 0;">
-                <div class="summary-row">
-                    <span>Комиссия (5%)</span>
-                    <span id="commissionDisplay">$0.50</span>
-                </div>
-                <div class="total-row">
-                    <span>Итого к оплате</span>
-                    <span id="totalDisplay" class="price-highlight">$10.50</span>
-                </div>
+            <div class="card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+                <ul class="summary-list">
+                    <li class="summary-item">
+                        <span>Комиссия сервиса (5%)</span>
+                        <span id="commissionVal">$0.50</span>
+                    </li>
+                    <li class="summary-total">
+                        <span>Итого к оплате</span>
+                        <span id="totalVal" class="total-value">$10.50</span>
+                    </li>
+                </ul>
             </div>
 
-            <button class="btn-primary" onclick="proceedToConfirm()">Продолжить →</button>
-        </div>
+            <button class="btn-main" onclick="goToConfirm()">Продолжить оплату →</button>
+        </section>
 
-        <!-- ЭКРАН 2: ПОДТВЕРЖДЕНИЕ -->
-        <div id="screen-confirm" class="screen">
-            <div class="card" style="text-align: center;">
-                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;">Пополняем счет:</p>
-                <h2 id="confirmLogin" style="margin-bottom: 24px; word-break: break-all;">User</h2>
+        <!-- CONFIRM SCREEN -->
+        <section id="confirmScreen" class="screen">
+            <div class="card" style="text-align: center; padding: 32px 20px;">
+                <span class="label">Пополняем аккаунт:</span>
+                <h2 id="displayLogin" style="margin: 8px 0 24px 0; font-size: 24px; word-break: break-all;">User</h2>
                 
-                <div class="summary-row" style="justify-content: center; gap: 10px;">
+                <div style="height: 1px; background: var(--tg-border); margin: 16px 0;"></div>
+                
+                <div class="summary-item" style="justify-content: center; gap: 12px;">
                     <span>Баланс Steam:</span>
-                    <span id="confirmBalance" class="price-highlight" style="font-weight: bold;">$10</span>
+                    <strong id="displayBalance" style="color: var(--tg-success); font-size: 18px;">$10.00</strong>
                 </div>
-                <div class="summary-row" style="justify-content: center; gap: 10px;">
-                    <span>Оплата картой/crypto:</span>
-                    <span id="confirmTotal" style="font-weight: bold;">$10.50</span>
+                <div class="summary-item" style="justify-content: center; gap: 12px;">
+                    <span>К оплате сейчас:</span>
+                    <strong id="displayTotal" style="font-size: 18px;">$10.50</strong>
                 </div>
             </div>
 
-            <button class="btn-primary btn-success" onclick="processPayment()">Оплатить <span id="payAmountText">$10.50</span></button>
-        </div>
+            <button class="btn-main" style="background: var(--tg-success);" onclick="processPayment()">
+                Оплатить <span id="payBtnText">$10.50</span>
+            </button>
+            <button class="btn-main btn-secondary" onclick="showHome()">Отмена</button>
+        </section>
 
-        <!-- ЭКРАН 3: ОБРАБОТКА -->
-        <div id="screen-processing" class="screen">
-            <div class="loader-container">
-                <div class="spinner"></div>
-                <p>Обрабатываем платеж...</p>
-                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Не закрывайте окно</p>
+        <!-- PROCESSING SCREEN -->
+        <section id="processingScreen" class="screen">
+            <div class="loader-wrap">
+                <div class="spinner-circle"></div>
+                <h3>Обработка платежа...</h3>
+                <p style="color: var(--tg-hint); margin-top: 8px; font-size: 14px;">Не закрывайте приложение</p>
             </div>
-        </div>
+        </section>
 
-        <!-- ЭКРАН 4: УСПЕХ -->
-        <div id="screen-success" class="screen">
-            <div class="success-icon">✅</div>
-            <h2 style="text-align: center; margin-bottom: 8px;">Успешно!</h2>
-            <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px;">Ваш код готов.</p>
-            
-            <div class="code-box" id="walletCode">
-                XXXXX-XXXXX-XXXXX
+        <!-- SUCCESS SCREEN -->
+        <section id="successScreen" class="screen">
+            <div style="text-align: center;">
+                <div class="success-icon">✅</div>
+                <h2 style="margin-bottom: 8px;">Успешно!</h2>
+                <p style="color: var(--tg-hint);">Ваш ключ активации готов.</p>
             </div>
-            <p class="copy-hint">Нажмите на код, чтобы скопировать</p>
 
-            <button class="btn-primary" onclick="openSteam()" style="margin-top: 24px;">Открыть Steam</button>
-            <button class="btn-primary btn-secondary" onclick="resetApp()" style="margin-top: 12px;">Новый заказ</button>
-        </div>
+            <div class="card">
+                <span class="label">Steam Wallet Code</span>
+                <div class="code-display" id="walletCodeBox" onclick="copyCode(this)">
+                    <span id="generatedCode">XXXXX-XXXXX-XXXXX</span>
+                    <div class="copy-tooltip">Скопировано!</div>
+                </div>
+                <p style="font-size: 12px; color: var(--tg-hint); text-align: center; margin-top: 8px;">Нажмите на код, чтобы скопировать</p>
+            </div>
+
+            <button class="btn-main" onclick="openSteamSite()">Активировать в Steam</button>
+            <button class="btn-main btn-secondary" onclick="resetApp()">Новый заказ</button>
+        </section>
     </main>
 
     <script>
-        // --- Инициализация Telegram ---
+        // 1. Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
         
-        // Применяем тему Telegram, если доступна, иначе используем дефолт
-        if(tg.themeParams.bg_color) document.documentElement.style.setProperty('--bg-color', tg.themeParams.bg_color);
-        if(tg.themeParams.text_color) document.documentElement.style.setProperty('--text-main', tg.themeParams.text_color);
-        if(tg.themeParams.button_color) document.documentElement.style.setProperty('--accent-blue', tg.themeParams.button_color);
+        // Применяем тему пользователя, если она отличается от нашей дефолтной
+        if (tg.themeParams) {
+            if(tg.themeParams.bg_color) document.documentElement.style.setProperty('--tg-bg', tg.themeParams.bg_color);
+            if(tg.themeParams.secondary_bg_color) document.documentElement.style.setProperty('--tg-card', tg.themeParams.secondary_bg_color);
+            if(tg.themeParams.text_color) document.documentElement.style.setProperty('--tg-text', tg.themeParams.text_color);
+            if(tg.themeParams.hint_color) document.documentElement.style.setProperty('--tg-hint', tg.themeParams.hint_color);
+            if(tg.themeParams.button_color) document.documentElement.style.setProperty('--tg-accent', tg.themeParams.button_color);
+        }
 
-        // --- Состояние приложения ---
-        let currentScreen = 'home';
+        // 2. Логика приложения
         const COMMISSION_RATE = 0.05;
         const MIN_AMOUNT = 5;
         const MAX_AMOUNT = 500;
 
-        // --- DOM Elements ---
+        let state = {
+            login: '',
+            amount: 10,
+            finalPrice: 10.50
+        };
+
+        // DOM Elements
         const screens = {
-            home: document.getElementById('screen-home'),
-            confirm: document.getElementById('screen-confirm'),
-            processing: document.getElementById('screen-processing'),
-            success: document.getElementById('screen-success')
+            home: document.getElementById('homeScreen'),
+            confirm: document.getElementById('confirmScreen'),
+            processing: document.getElementById('processingScreen'),
+            success: document.getElementById('successScreen')
         };
         const backBtn = document.getElementById('backBtn');
-        const loginInput = document.getElementById('loginInput');
-        const amountInput = document.getElementById('amountInput');
-        const commissionDisplay = document.getElementById('commissionDisplay');
-        const totalDisplay = document.getElementById('totalDisplay');
-        const qaButtons = document.querySelectorAll('.qa-btn');
+        const inputs = {
+            login: document.getElementById('steamLogin'),
+            amount: document.getElementById('amountInput')
+        };
+        const displays = {
+            commission: document.getElementById('commissionVal'),
+            total: document.getElementById('totalVal'),
+            login: document.getElementById('displayLogin'),
+            balance: document.getElementById('displayBalance'),
+            payTotal: document.getElementById('displayTotal'),
+            payBtn: document.getElementById('payBtnText'),
+            code: document.getElementById('generatedCode')
+        };
+        const chips = document.querySelectorAll('.chip');
 
-        // --- Логика расчета цены ---
-        function updatePrice() {
-            let amount = parseFloat(amountInput.value) || 0;
-            if (amount < 0) amount = 0;
-            if (amount > MAX_AMOUNT) amount = MAX_AMOUNT;
+        // Функция обновления цен
+        function updatePrices() {
+            let amt = parseFloat(inputs.amount.value);
+            if (isNaN(amt)) amt = 0;
+            if (amt > MAX_AMOUNT) amt = MAX_AMOUNT;
+            if (amt < 0) amt = 0;
             
-            // Обновляем инпут, если пользователь вышел за пределы
-            if(parseFloat(amountInput.value) !== amount) amountInput.value = amount;
+            // Синхронизируем инпут
+            inputs.amount.value = amt;
 
-            const commission = amount * COMMISSION_RATE;
-            const total = amount + commission;
+            const comm = amt * COMMISSION_RATE;
+            const total = amt + comm;
 
-            commissionDisplay.textContent = `$${commission.toFixed(2)}`;
-            totalDisplay.textContent = `$${total.toFixed(2)}`;
+            state.amount = amt;
+            state.finalPrice = total;
+
+            displays.commission.textContent = `$${comm.toFixed(2)}`;
+            displays.total.textContent = `$${total.toFixed(2)}`;
             
-            // Обновляем данные на экране подтверждения
-            document.getElementById('confirmBalance').textContent = `$${amount.toFixed(2)}`;
-            document.getElementById('confirmTotal').textContent = `$${total.toFixed(2)}`;
-            document.getElementById('payAmountText').textContent = `$${total.toFixed(2)}`;
-
-            // Подсветка активных кнопок сумм
-            qaButtons.forEach(btn => {
-                if(parseInt(btn.dataset.val) === Math.round(amount)) {
-                    btn.classList.add('selected');
+            // Обновляем подсветку чипов
+            chips.forEach(chip => {
+                if (parseFloat(chip.dataset.val) === amt) {
+                    chip.classList.add('active');
                 } else {
-                    btn.classList.remove('selected');
+                    chip.classList.remove('active');
                 }
             });
         }
 
         // Слушатели событий
-        amountInput.addEventListener('input', updatePrice);
+        inputs.amount.addEventListener('input', updatePrices);
         
-        qaButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                amountInput.value = btn.dataset.val;
-                updatePrice();
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                inputs.amount.value = chip.dataset.val;
+                updatePrices();
             });
         });
 
-        // --- Навигация между экранами ---
-        function showScreen(screenName) {
-            Object.values(screens).forEach(el => el.classList.remove('active'));
+        // Навигация
+        function switchScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
             screens[screenName].classList.add('active');
-            currentScreen = screenName;
-
+            
             // Управление кнопкой назад
             if (screenName === 'home') {
-                backBtn.classList.add('disabled');
+                backBtn.classList.add('hidden');
             } else {
-                backBtn.classList.remove('disabled');
+                backBtn.classList.remove('hidden');
             }
         }
 
-        function goBack() {
-            if (currentScreen === 'confirm') showScreen('home');
-            else if (currentScreen === 'success') resetApp();
-        }
+        backBtn.addEventListener('click', () => {
+            const current = document.querySelector('.screen.active').id;
+            if (current === 'confirmScreen') switchScreen('home');
+            else if (current === 'successScreen') resetApp();
+        });
 
-        function proceedToConfirm() {
-            const login = loginInput.value.trim();
-            const amount = parseFloat(amountInput.value);
-
+        function goToConfirm() {
+            const login = inputs.login.value.trim();
             if (!login) {
                 tg.showAlert("Введите логин Steam");
                 return;
             }
-            if (isNaN(amount) || amount < MIN_AMOUNT || amount > MAX_AMOUNT) {
+            if (state.amount < MIN_AMOUNT || state.amount > MAX_AMOUNT) {
                 tg.showAlert(`Сумма должна быть от $${MIN_AMOUNT} до $${MAX_AMOUNT}`);
                 return;
             }
 
-            document.getElementById('confirmLogin').textContent = login;
-            showScreen('confirm');
+            state.login = login;
+            displays.login.textContent = login;
+            displays.balance.textContent = `$${state.amount.toFixed(2)}`;
+            displays.payTotal.textContent = `$${state.finalPrice.toFixed(2)}`;
+            displays.payBtn.textContent = `$${state.finalPrice.toFixed(2)}`;
+
+            switchScreen('confirm');
         }
 
         async function processPayment() {
-            showScreen('processing');
+            switchScreen('processing');
             
-            // Имитация запроса к серверу (2 секунды)
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Имитация запроса к серверу
+            await new Promise(r => setTimeout(r, 2000));
             
-            // Генерация фейкового кода
-            const code = generateRandomCode();
-            document.getElementById('walletCode').textContent = code;
+            // Генерация кода
+            const code = generateCode();
+            displays.code.textContent = code;
             
             // Вибрация успеха
             if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
             
-            showScreen('success');
+            switchScreen('success');
         }
 
-        function generateRandomCode() {
+        function generateCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < 25; i++) {
-                if (i > 0 && i % 5 === 0) result += '-';
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            let res = '';
+            for(let i=0; i<25; i++) {
+                if(i>0 && i%5===0) res += '-';
+                res += chars.charAt(Math.floor(Math.random()*chars.length));
             }
-            return result;
+            return res;
         }
 
-        function openSteam() {
-            // Открываем страницу активации ключей
+        function copyCode(el) {
+            navigator.clipboard.writeText(displays.code.textContent).then(() => {
+                el.classList.add('copied');
+                setTimeout(() => el.classList.remove('copied'), 2000);
+                if(tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+            });
+        }
+
+        function openSteamSite() {
             window.open('https://store.steampowered.com/account/registerkey', '_blank');
         }
 
-        function resetApp() {
-            loginInput.value = '';
-            amountInput.value = 10;
-            updatePrice();
-            showScreen('home');
+        function showHome() {
+            switchScreen('home');
         }
 
-        // Копирование кода по клику
-        document.getElementById('walletCode').addEventListener('click', function() {
-            navigator.clipboard.writeText(this.textContent).then(() => {
-                if(tg.showPopup) {
-                    tg.showPopup({
-                        title: 'Скопировано!',
-                        message: 'Код скопирован в буфер обмена.',
-                        buttons: [{type: 'ok'}]
-                    });
-                } else {
-                    alert('Код скопирован!');
-                }
-            });
-        });
+        function resetApp() {
+            inputs.login.value = '';
+            inputs.amount.value = 10;
+            updatePrices();
+            switchScreen('home');
+        }
 
-        // Инициальный расчет
-        updatePrice();
+        // Инициальный вызов
+        updatePrices();
 
     </script>
 </body>
-                  </html>
+                    </html>
