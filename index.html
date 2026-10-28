@@ -10,9 +10,7 @@
     <style>
         :root {
             --bg: #050505;
-            --chrome-light: #ffffff;
             --chrome-mid: #a0a0a0;
-            --chrome-dark: #333333;
             --text-muted: #666666;
             --card-bg: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.1);
@@ -101,8 +99,7 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- ГЛАВНАЯ --- */
-        /* Герой занимает ВЕСЬ первый экран: отзывы гарантированно ниже свайпа */
+        /* --- ГЛАВНАЯ (герой = весь первый экран, отзывы ниже свайпа) --- */
         .hero {
             text-align: center;
             padding: 40px 20px 20px;
@@ -119,16 +116,32 @@
         }
         .hero p { color: var(--text-muted); font-size: 15px; margin-bottom: 50px; max-width: 300px; }
 
-        /* --- КНОПКА ИЗ ТЁМНОГО СЕРЕБРА + КАПЛИ --- */
-        .melt-btn-container { position: relative; display: inline-block; }
-        .melt-btn-container.btn-full { display: block; }
+        /* --- КНОПКА С ШИПАМИ --- */
+        .spike-wrap { position: relative; display: inline-block; }
+
+        /* Шипы: небольшие, хаотичные, с закруглёнными кончиками */
+        .spike {
+            position: absolute;
+            width: 10px; height: 16px;
+            background: linear-gradient(0deg, #3d3d3d 0%, #8c8c8c 55%, #cfcfcf 100%);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0; /* закруглённый кончик */
+            z-index: 1;
+            pointer-events: none;
+        }
+        .spike:nth-child(1) { top: -11px; left: 16%;  transform: rotate(-18deg); }
+        .spike:nth-child(2) { top: -13px; left: 46%;  transform: rotate(6deg);   height: 18px; width: 9px; }
+        .spike:nth-child(3) { top: -10px; right: 14%; transform: rotate(22deg);  height: 14px; }
+        .spike:nth-child(4) { bottom: -11px; left: 24%;  transform: rotate(196deg); height: 15px; }
+        .spike:nth-child(5) { bottom: -13px; right: 30%; transform: rotate(172deg); height: 17px; width: 9px; }
+        .spike:nth-child(6) { bottom: -10px; right: 10%; transform: rotate(205deg); height: 13px; }
+        .spike:nth-child(7) { left: -9px;  top: 30%;  transform: rotate(-72deg);  height: 13px; }
+        .spike:nth-child(8) { right: -9px; top: 52%;  transform: rotate(78deg);   height: 14px; }
 
         .melt-btn {
             font-family: 'Unbounded', sans-serif;
             font-size: 16px; font-weight: 700; letter-spacing: 2px;
             color: #fff;
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-            /* Тёмное натуральное серебро, как металл на лого */
             background: linear-gradient(180deg, #d6d6d6 0%, #8c8c8c 35%, #4a4a4a 55%, #9e9e9e 100%);
             border: none;
             padding: 18px 50px;
@@ -140,54 +153,7 @@
             transition: transform 0.1s;
         }
         .melt-btn:active { transform: scale(0.95); }
-
-        /* Набухшие капли, висящие на нижней грани кнопки */
-        .melt-btn::after {
-            content: '';
-            position: absolute;
-            left: 0; right: 0; bottom: -7px;
-            height: 10px;
-            background:
-                radial-gradient(circle at 12% 0, #8c8c8c 3px, transparent 4px),
-                radial-gradient(circle at 34% 0, #a8a8a8 4px, transparent 5px),
-                radial-gradient(circle at 58% 0, #7a7a7a 3px, transparent 4px),
-                radial-gradient(circle at 82% 0, #9a9a9a 4px, transparent 5px);
-            background-repeat: no-repeat;
-            z-index: 1;
-            animation: swell 3s infinite ease-in-out;
-        }
-        @keyframes swell {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(1.5); }
-        }
-
-        /* Падающие капли: набухает -> растягивается -> отрывается -> падает с ускорением */
-        .drop {
-            position: absolute;
-            top: 100%;
-            margin-top: -2px;
-            width: 7px; height: 11px;
-            background: radial-gradient(circle at 35% 25%, #ffffff 0%, #b5b5b5 40%, #3f3f3f 100%);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            opacity: 0;
-            filter: drop-shadow(0 0 4px rgba(255,255,255,0.25));
-            animation: drip 3s infinite;
-            z-index: 1;
-            pointer-events: none;
-        }
-        .drop:nth-child(2) { left: 12%; animation-delay: 0s;   animation-duration: 2.8s; }
-        .drop:nth-child(3) { left: 38%; animation-delay: 0.9s; animation-duration: 3.4s; width: 6px; height: 9px; }
-        .drop:nth-child(4) { left: 63%; animation-delay: 1.7s; animation-duration: 3s; }
-        .drop:nth-child(5) { left: 87%; animation-delay: 2.4s; animation-duration: 3.6s; width: 5px; height: 8px; }
-
-        @keyframes drip {
-            0%   { transform: translateY(0) scale(0.4, 0.4); opacity: 0; }
-            12%  { transform: translateY(2px) scale(0.7, 0.9); opacity: 1; }
-            30%  { transform: translateY(6px) scale(0.9, 1.25); opacity: 1; }
-            55%  { transform: translateY(18px) scale(0.85, 1.45); opacity: 1; }
-            85%  { transform: translateY(62px) scale(0.8, 1.65); opacity: 0.9; }
-            100% { transform: translateY(90px) scale(0.7, 1.8); opacity: 0; }
-        }
+        .btn-full { width: 100%; }
 
         /* Подсказка про свайп */
         .scroll-hint {
@@ -200,7 +166,7 @@
         }
         @keyframes bounce { 0%,100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(8px); opacity: 1; } }
 
-        /* --- ОТЗЫВЫ (видны только после свайпа) --- */
+        /* --- ОТЗЫВЫ --- */
         .reviews-section { padding: 40px 0; }
         .reviews-title {
             font-family: 'Unbounded', sans-serif;
@@ -276,8 +242,6 @@
         .price-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
         .price-total { display: flex; justify-content: space-between; font-size: 20px; font-weight: 800; margin: 20px 0 30px; padding-top: 15px; border-top: 1px solid var(--border); }
 
-        .btn-full { width: 100%; }
-
         .back-link {
             display: inline-block; margin-top: 20px;
             color: var(--text-muted); font-size: 12px;
@@ -351,9 +315,11 @@
             <h1 class="chrome-text">Пополняй Steam<br>без правил</h1>
             <p>Быстро. Анонимно. По-своему. Баланс падает на твой аккаунт за минуты.</p>
 
-            <div class="melt-btn-container">
+            <!-- Кнопка с шипами, БЕЗ капель -->
+            <div class="spike-wrap">
+                <span class="spike"></span><span class="spike"></span><span class="spike"></span><span class="spike"></span>
+                <span class="spike"></span><span class="spike"></span><span class="spike"></span><span class="spike"></span>
                 <button class="melt-btn" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
-                <div class="drop"></div><div class="drop"></div><div class="drop"></div><div class="drop"></div>
             </div>
 
             <div class="scroll-hint">▼ листай вниз ▼</div>
@@ -394,10 +360,8 @@
             <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
             <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
 
-            <div class="melt-btn-container btn-full">
-                <button class="melt-btn btn-full" onclick="processPayment(event)">ОПЛАТИТЬ</button>
-                <div class="drop"></div><div class="drop"></div><div class="drop"></div><div class="drop"></div>
-            </div>
+            <!-- Кнопка БЕЗ капель и шипов, спокойная -->
+            <button class="melt-btn btn-full" onclick="processPayment(event)">ОПЛАТИТЬ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← назад</a>
@@ -435,10 +399,7 @@
             <h2 class="form-title chrome-text">Поддержка</h2>
             <p style="color: var(--text-muted); margin: 20px 0 30px; font-size: 14px;">Онлайн 24/7. Пиши — разрулим любой вопрос.</p>
 
-            <div class="melt-btn-container btn-full">
-                <button class="melt-btn btn-full" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
-                <div class="drop"></div><div class="drop"></div><div class="drop"></div><div class="drop"></div>
-            </div>
+            <button class="melt-btn btn-full" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a>
