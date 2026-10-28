@@ -3,592 +3,517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Steam Top-Up</title>
+    <title>TOP-UP</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Шрифты в стиле Y2K / streetwear -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f0c1b; /* Темно-фиолетовый фон */
-            --primary-purple: #9d4edd; /* Яркий фиолетовый */
-            --secondary-purple: #7b2cbf;
-            --neon-glow: rgba(157, 78, 221, 0.6);
-            --text-main: #ffffff;
-            --text-muted: #bfaee0;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border-color: rgba(157, 78, 221, 0.3);
-            --success-green: #2ecc71;
+            --bg: #030303;
+            --chrome-1: #ffffff;
+            --chrome-2: #b9bcc9;
+            --chrome-3: #5c5f6e;
+            --purple: #9d4edd;
+            --blue: #2aabee;
+            --pink: #ff00cc;
+            --text-muted: #8a8a99;
+            --glow: rgba(157, 78, 221, 0.55);
+            --card-bg: rgba(255, 255, 255, 0.04);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+            background-color: var(--bg);
+            color: #fff;
+            font-family: 'Manrope', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* --- HEADER & MENU --- */
+        /* Хромированный текст (жидкий металл) */
+        .chrome-text {
+            background: linear-gradient(180deg, #ffffff 0%, #d9dbe6 35%, #6a6d7e 50%, #ffffff 65%, #9fa2b1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 12px rgba(255,255,255,0.15));
+        }
+
+        /* Неоновый текст */
+        .neon-text {
+            background: linear-gradient(90deg, var(--purple), var(--blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px var(--glow));
+        }
+
+        /* --- HEADER --- */
         header {
             position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 15px 20px;
+            top: 0; left: 0; right: 0;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            background: linear-gradient(to bottom, var(--bg-dark) 80%, transparent);
+            background: linear-gradient(to bottom, rgba(3,3,3,0.95), transparent);
         }
 
         .logo-text {
-            font-weight: 800;
-            font-size: 18px;
-            background: linear-gradient(90deg, #fff, var(--primary-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 1px;
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 16px;
+            letter-spacing: 3px;
         }
 
         .menu-btn {
             background: none;
             border: none;
-            color: white;
-            font-size: 24px;
+            color: #fff;
+            font-size: 22px;
             cursor: pointer;
-            padding: 5px;
+            padding: 6px 10px;
+            filter: drop-shadow(0 0 6px var(--glow));
         }
 
-        /* Dropdown Menu */
+        /* Dropdown */
         .dropdown-menu {
             position: absolute;
-            top: 60px;
-            right: 20px;
-            background: rgba(20, 15, 35, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 0;
-            width: 200px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transform-origin: top right;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0;
-            visibility: hidden;
-            scale: 0.9;
+            top: 58px; right: 16px;
+            background: rgba(10, 10, 14, 0.97);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 8px 0;
+            width: 210px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.25), 0 10px 30px rgba(0,0,0,0.8);
+            clip-path: polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+            opacity: 0; visibility: hidden; transform: scale(0.9); transform-origin: top right;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        .dropdown-menu.active {
-            opacity: 1;
-            visibility: visible;
-            scale: 1;
-        }
+        .dropdown-menu.active { opacity: 1; visibility: visible; transform: scale(1); }
 
         .menu-item {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 12px 20px;
-            background: none;
-            border: none;
+            display: block; width: 100%; text-align: left;
+            padding: 12px 18px;
+            background: none; border: none;
+            color: var(--text-muted);
+            font-family: 'Manrope', sans-serif;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .menu-item:active { background: rgba(157, 78, 221, 0.15); color: #fff; padding-left: 24px; }
+
+        /* --- PAGES --- */
+        .page { display: none; padding: 90px 0 30px; animation: fadeIn 0.4s ease-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HOME --- */
+        .hero {
+            position: relative;
+            text-align: center;
+            padding: 40px 20px 20px;
+            min-height: 70vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        /* Логотип-звезда на фоне */
+        .logo-bg {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 340px; height: 340px;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            opacity: 0.5;
+            pointer-events: none;
+            animation: logoPulse 3s infinite alternate;
+        }
+        .logo-bg img { width: 100%; height: 100%; object-fit: contain; }
+        @keyframes logoPulse {
+            0% { opacity: 0.35; transform: translate(-50%, -50%) scale(0.95) rotate(-3deg); filter: drop-shadow(0 0 20px var(--glow)); }
+            100% { opacity: 0.65; transform: translate(-50%, -50%) scale(1.05) rotate(3deg); filter: drop-shadow(0 0 45px var(--glow)); }
+        }
+
+        /* Летающие хромированные капли */
+        .drop {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #8a8d9c 45%, #2b2d38 100%);
+            pointer-events: none;
+            animation: floatDrop 6s infinite ease-in-out;
+        }
+        .drop:nth-child(1) { width: 10px; height: 10px; top: 20%; left: 15%; animation-delay: 0s; }
+        .drop:nth-child(2) { width: 6px; height: 6px; top: 30%; right: 18%; animation-delay: 1.5s; }
+        .drop:nth-child(3) { width: 14px; height: 14px; bottom: 25%; left: 20%; animation-delay: 3s; }
+        .drop:nth-child(4) { width: 8px; height: 8px; bottom: 35%; right: 12%; animation-delay: 4.2s; }
+        @keyframes floatDrop {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(-25px); opacity: 1; }
+        }
+
+        .hero h1 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 30px;
+            font-weight: 900;
+            line-height: 1.25;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        .hero p {
             color: var(--text-muted);
             font-size: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
+            margin-bottom: 36px;
+            letter-spacing: 0.5px;
         }
 
-        .menu-item:hover, .menu-item:active {
-            background: rgba(157, 78, 221, 0.1);
-            color: var(--primary-purple);
-            padding-left: 25px;
-        }
-
-        /* --- PAGES CONTAINER --- */
-        .page {
-            display: none;
-            flex: 1;
-            padding-top: 80px; /* Space for header */
-            padding-bottom: 20px;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .page.active {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- HOME PAGE STYLES --- */
-        .hero-section {
-            text-align: center;
-            padding: 20px;
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            margin-top: 20px;
-        }
-
-        /* Animated Background Logo - BRIGHTER VERSION */
-        .steam-logo-bg {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 350px;
-            height: 350px;
-            /* Using a bright SVG path for Steam logo with higher opacity and glow */
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239d4edd" opacity="0.4"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="3"/></svg>'); 
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            filter: drop-shadow(0 0 30px var(--neon-glow)) brightness(1.2);
-            animation: pulseGlow 3s infinite alternate;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        @keyframes pulseGlow {
-            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.95); filter: drop-shadow(0 0 20px var(--neon-glow)); }
-            100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); filter: drop-shadow(0 0 40px var(--neon-glow)); }
-        }
-
-        .welcome-text h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            line-height: 1.2;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-        
-        .welcome-text p {
-            color: var(--text-muted);
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
-
+        /* Острая кнопка в стиле liquid metal */
         .cta-button {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-            color: white;
+            font-family: 'Unbounded', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #000;
+            background: linear-gradient(180deg, #ffffff 0%, #c7cad6 40%, #7d8090 55%, #ffffff 100%);
             border: none;
-            padding: 16px 40px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 0 0 20px var(--neon-glow);
+            padding: 18px 44px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            clip-path: polygon(0 14px, 14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px));
+            box-shadow: 0 0 25px rgba(255,255,255,0.35), 0 0 60px var(--glow);
+            transition: transform 0.15s;
             position: relative;
-            overflow: hidden;
+        }
+        .cta-button:active { transform: scale(0.94); }
+
+        .cta-purple {
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            color: #fff;
+            box-shadow: 0 0 25px var(--glow), 0 0 60px rgba(42, 171, 238, 0.3);
         }
 
-        .cta-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 10px var(--neon-glow);
-        }
-
-        .cta-button::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        /* Reviews Container - Hidden initially, requires scroll */
-        .reviews-wrapper {
-            width: 100%;
-            margin-top: 60px; /* Big gap to force scrolling */
-            padding-bottom: 20px;
-        }
-        
-        .reviews-header {
-            text-align: center;
+        /* Стрелка-призыв скроллить */
+        .scroll-hint {
+            margin-top: 50px;
             color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 15px;
+            font-size: 12px;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            animation: bounce 2s infinite;
         }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
 
-        .reviews-container {
+        /* Острый разделитель (зигзаг) */
+        .spike-divider {
             width: 100%;
-            overflow: hidden;
-            background: rgba(255,255,255,0.03);
-            padding: 15px 0;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
+            height: 20px;
+            background:
+                linear-gradient(135deg, transparent 49.5%, rgba(255,255,255,0.25) 50%, transparent 50.5%),
+                linear-gradient(-135deg, transparent 49.5%, rgba(255,255,255,0.25) 50%, transparent 50.5%);
+            background-size: 20px 20px;
+            background-repeat: repeat-x;
+            margin: 10px 0;
         }
 
-        .marquee-track {
-            display: flex;
-            gap: 20px;
-            animation: scrollLeft 20s linear infinite;
-            width: fit-content;
+        /* --- REVIEWS --- */
+        .reviews-section { padding: 30px 0 10px; }
+        .reviews-title {
+            font-family: 'Unbounded', sans-serif;
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 4px;
+            margin-bottom: 18px;
+            text-transform: uppercase;
         }
+        .reviews-container {
+            overflow: hidden;
+            padding: 14px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(90deg, transparent, rgba(157,78,221,0.08), transparent);
+        }
+        .marquee-track { display: flex; gap: 16px; width: fit-content; animation: scrollLeft 22s linear infinite; }
+        @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
         .review-card {
+            min-width: 210px;
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 12px 16px;
-            border-radius: 12px;
-            min-width: 200px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 14px 16px;
+            clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+            display: flex; flex-direction: column; gap: 6px;
         }
-
-        .review-user { font-size: 12px; color: var(--primary-purple); font-weight: bold; }
+        .review-user { font-size: 12px; font-weight: 800; letter-spacing: 1px; }
         .review-text { font-size: 13px; color: var(--text-muted); }
-        .stars { color: gold; font-size: 12px; }
+        .stars { color: #fff; font-size: 11px; letter-spacing: 2px; filter: drop-shadow(0 0 4px var(--glow)); }
 
-        @keyframes scrollLeft {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        /* --- TOPUP PAGE STYLES --- */
+        /* --- FORMS / CARDS --- */
         .form-card {
+            margin: 0 auto;
+            width: 92%;
+            max-width: 420px;
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 25px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 28px 22px;
+            clip-path: polygon(0 18px, 18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+            box-shadow: 0 0 40px rgba(157, 78, 221, 0.12);
         }
 
-        .input-group {
+        .form-title {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .info-badge {
+            border: 1px solid rgba(42, 171, 238, 0.4);
+            color: var(--blue);
+            background: rgba(42, 171, 238, 0.08);
+            padding: 8px 12px;
+            font-size: 12px;
+            text-align: center;
             margin-bottom: 20px;
+            clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
         }
 
         .input-label {
             display: block;
-            margin-bottom: 8px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
             color: var(--text-muted);
-            font-size: 14px;
+            margin-bottom: 8px;
         }
 
         .custom-input {
             width: 100%;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            color: white;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
             padding: 14px;
-            border-radius: 12px;
             font-size: 16px;
+            font-family: 'Manrope', sans-serif;
             outline: none;
-            transition: border-color 0.3s;
+            clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+            transition: all 0.25s;
+            margin-bottom: 18px;
         }
-
         .custom-input:focus {
-            border-color: var(--primary-purple);
-            box-shadow: 0 0 10px rgba(157, 78, 221, 0.2);
+            border-color: var(--purple);
+            box-shadow: 0 0 15px var(--glow);
+            background: rgba(157, 78, 221, 0.06);
         }
 
-        .amount-chips {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
+        .amount-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
         .chip {
             background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255,255,255,0.15);
             color: var(--text-muted);
-            padding: 10px 0;
+            padding: 11px 0;
             text-align: center;
-            border-radius: 8px;
+            font-size: 13px; font-weight: 700;
             cursor: pointer;
+            clip-path: polygon(0 7px, 7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%);
             transition: all 0.2s;
-            font-size: 14px;
+        }
+        .chip.selected {
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 0 18px var(--glow);
         }
 
-        .chip.selected {
-            background: var(--primary-purple);
-            color: white;
-            border-color: var(--primary-purple);
-            box-shadow: 0 0 15px var(--neon-glow);
-        }
+        .price-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .price-total { display: flex; justify-content: space-between; font-size: 19px; font-weight: 800; margin: 14px 0 22px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.12); }
+
+        .btn-full { width: 100%; }
 
         .back-link {
             display: inline-block;
-            margin-top: 20px;
+            margin-top: 18px;
             color: var(--text-muted);
+            font-size: 13px;
             text-decoration: none;
-            font-size: 14px;
             cursor: pointer;
+            letter-spacing: 1px;
         }
-        .back-link:hover { color: var(--primary-purple); }
+        .back-link:active { color: var(--purple); }
 
-        /* Status Badge for Direct Top-up info */
-        .info-badge {
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid rgba(46, 204, 113, 0.3);
-            color: var(--success-green);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        /* --- FAQ PAGE STYLES --- */
-        .faq-list {
-            width: 90%;
-            max-width: 500px;
-        }
-
+        /* --- FAQ --- */
+        .faq-list { width: 92%; max-width: 480px; margin: 0 auto; }
         .faq-item {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
             margin-bottom: 10px;
+            clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
             overflow: hidden;
         }
-
         .faq-question {
-            padding: 15px 20px;
+            padding: 16px 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: 700; font-size: 14px;
             cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            color: var(--text-main);
         }
-
-        .faq-arrow {
-            transition: transform 0.3s;
-            color: var(--primary-purple);
-        }
-
+        .faq-arrow { color: var(--purple); transition: transform 0.3s; filter: drop-shadow(0 0 5px var(--glow)); }
         .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background: rgba(0,0,0,0.1);
-            padding: 0 20px;
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s;
+            padding: 0 18px;
             color: var(--text-muted);
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 13px; line-height: 1.6;
         }
+        .faq-item.active .faq-arrow { transform: rotate(180deg); }
+        .faq-item.active .faq-answer { max-height: 220px; padding: 0 18px 16px; }
 
-        .faq-item.active .faq-arrow {
-            transform: rotate(180deg);
-        }
-
-        .faq-item.active .faq-answer {
-            max-height: 200px;
-            padding: 15px 20px;
-        }
-
-        /* Support Link Style */
-        .support-banner {
-            background: linear-gradient(90deg, #ff416c, #ff4b2b);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
+        .page-title {
+            font-family: 'Unbounded', sans-serif;
             text-align: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 26px;
         }
-
     </style>
 </head>
 <body>
 
-    <!-- Header with Menu -->
     <header>
-        <div class="logo-text">STEAM TOP-UP</div>
+        <div class="logo-text chrome-text">TOP-UP</div>
         <button class="menu-btn" onclick="toggleMenu()">⋮</button>
-        
         <div class="dropdown-menu" id="dropdownMenu">
             <button class="menu-item" onclick="navigateTo('topup')">💰 Пополнить баланс</button>
-            <button class="menu-item" onclick="scrollToReviews()">⭐ Наши отзывы</button>
-            <button class="menu-item" onclick="navigateTo('faq')">❓ FAQ / Помощь</button>
-            <button class="menu-item" onclick="openSupport()">🛠 Тех. поддержка</button>
+            <button class="menu-item" onclick="scrollToReviews()">⭐ Отзывы</button>
+            <button class="menu-item" onclick="navigateTo('faq')">❓ FAQ</button>
+            <button class="menu-item" onclick="navigateTo('support')">🛠 Поддержка</button>
         </div>
     </header>
 
-    <!-- MAIN CONTENT AREA -->
-    
-    <!-- 1. HOME PAGE -->
+    <!-- HOME -->
     <div id="homePage" class="page active">
-        <div class="hero-section">
-            <div class="steam-logo-bg"></div>
-            
-            <div class="welcome-text">
-                <h1>Добро пожаловать!<br>В лучший сервис пополнения</h1>
-                <p>Быстро, безопасно и выгодно.<br>Твой игровой мир ждет.</p>
-                
-                <button class="cta-button" onclick="navigateTo('topup')">
-                    ПОПОЛНИТЬ СЕЙЧАС
-                </button>
-            </div>
+        <div class="hero">
+            <div class="logo-bg"><img src="logo.png" alt="" onerror="this.style.display='none'"></div>
+            <div class="drop"></div><div class="drop"></div><div class="drop"></div><div class="drop"></div>
+
+            <h1 class="chrome-text">Пополняй Steam<br>без правил</h1>
+            <p>Быстро. Анонимно. По-своему.<br>Баланс падает на твой аккаунт за минуты.</p>
+
+            <button class="cta-button" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
+
+            <div class="scroll-hint">▼ листай вниз ▼</div>
         </div>
 
-        <!-- Scrolling Reviews - Moved Down -->
-        <div class="reviews-wrapper" id="reviewsSection">
-            <div class="reviews-header">Что говорят наши клиенты</div>
+        <div class="spike-divider"></div>
+
+        <div class="reviews-section" id="reviewsSection">
+            <div class="reviews-title neon-text">Отзывы своих</div>
             <div class="reviews-container">
                 <div class="marquee-track">
-                    <!-- Review 1 -->
                     <div class="review-card">
                         <span class="stars">★★★★★</span>
-                        <span class="review-user">@Alex_Gamer</span>
-                        <span class="review-text">Деньги пришли мгновенно!</span>
-                    </div>
-                    <!-- Review 2 -->
-                    <div class="review-card">
-                        <span class="stars">★★★★★</span>
-                        <span class="review-user">@ProPlayer99</span>
-                        <span class="review-text">Лучшие курсы рубля к доллару.</span>
-                    </div>
-                    <!-- Review 3 -->
-                    <div class="review-card">
-                        <span class="stars">★★★★☆</span>
-                        <span class="review-user">@StreamSniper</span>
-                        <span class="review-text">Поддержка отвечает быстро.</span>
-                    </div>
-                     <!-- Duplicate for seamless loop -->
-                     <div class="review-card">
-                        <span class="stars">★★★★★</span>
-                        <span class="review-user">@Alex_Gamer</span>
-                        <span class="review-text">Деньги пришли мгновенно!</span>
+                        <span class="review-user neon-text">@alex_gmrr</span>
+                        <span class="review-text">Баланс упал за 2 минуты, огонь</span>
                     </div>
                     <div class="review-card">
                         <span class="stars">★★★★★</span>
-                        <span class="review-user">@ProPlayer99</span>
-                        <span class="review-text">Лучшие курсы рубля к доллару.</span>
+                        <span class="review-user neon-text">@kvnt99</span>
+                        <span class="review-text">Лучший курс рубля, беру постоянно</span>
                     </div>
                     <div class="review-card">
                         <span class="stars">★★★★☆</span>
-                        <span class="review-user">@StreamSniper</span>
-                        <span class="review-text">Поддержка отвечает быстро.</span>
+                        <span class="review-user neon-text">@sniper_xx</span>
+                        <span class="review-text">Поддержка ответила ночью, респект</span>
+                    </div>
+                    <div class="review-card">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-user neon-text">@alex_gmrr</span>
+                        <span class="review-text">Баланс упал за 2 минуты, огонь</span>
+                    </div>
+                    <div class="review-card">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-user neon-text">@kvnt99</span>
+                        <span class="review-text">Лучший курс рубля, беру постоянно</span>
+                    </div>
+                    <div class="review-card">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-user neon-text">@sniper_xx</span>
+                        <span class="review-text">Поддержка ответила ночью, респект</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. TOP UP PAGE -->
+    <!-- TOPUP -->
     <div id="topupPage" class="page">
         <div class="form-card">
-            <h2 style="margin-bottom: 10px; text-align: center;">Пополнение Steam</h2>
-            <div class="info-badge">
-                💳 Прямое зачисление на баланс аккаунта
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Логин Steam</label>
-                <input type="text" class="custom-input" placeholder="Введите ваш никнейм" id="steamLoginInput">
-            </div>
+            <h2 class="form-title chrome-text">Пополнение</h2>
+            <div class="info-badge">⚡ Прямое зачисление на баланс аккаунта</div>
 
-            <div class="input-group">
-                <label class="input-label">Выберите сумму (₽)</label>
-                <div class="amount-chips">
-                    <div class="chip" onclick="selectAmount(this, 500)">500 ₽</div>
-                    <div class="chip selected" onclick="selectAmount(this, 1000)">1000 ₽</div>
-                    <div class="chip" onclick="selectAmount(this, 2000)">2000 ₽</div>
-                    <div class="chip" onclick="selectAmount(this, 5000)">5000 ₽</div>
-                </div>
-                <input type="number" class="custom-input" placeholder="Или своя сумма" id="customAmountInput" oninput="clearChipsSelection()">
-            </div>
+            <label class="input-label">Логин Steam</label>
+            <input type="text" class="custom-input" id="steamLoginInput" placeholder="твой никнейм">
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: var(--text-muted);">
-                <span>Комиссия (3%):</span>
-                <span id="commissionDisplay">30 ₽</span>
+            <label class="input-label">Сумма (₽)</label>
+            <div class="amount-chips">
+                <div class="chip" onclick="selectAmount(this, 500)">500 ₽</div>
+                <div class="chip selected" onclick="selectAmount(this, 1000)">1000 ₽</div>
+                <div class="chip" onclick="selectAmount(this, 2000)">2000 ₽</div>
+                <div class="chip" onclick="selectAmount(this, 5000)">5000 ₽</div>
             </div>
-             <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 18px; font-weight: bold;">
-                <span>Итого к оплате:</span>
-                <span id="totalDisplay" style="color: var(--primary-purple);">1030 ₽</span>
-            </div>
+            <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" oninput="clearChipsSelection()">
 
-            <button class="cta-button" style="width: 100%;" onclick="processPayment()">
-                ОПЛАТИТЬ И ЗАЧИСЛИТЬ
-            </button>
+            <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
+            <div class="price-total"><span class="chrome-text">Итого:</span><span class="neon-text" id="totalDisplay">1030 ₽</span></div>
 
-            <a href="#" class="back-link" onclick="navigateTo('home'); return false;">← Вернуться назад</a>
+            <button class="cta-button cta-purple btn-full" onclick="processPayment(event)">ОПЛАТИТЬ</button>
+            <br>
+            <a class="back-link" onclick="navigateTo('home'); return false;">← назад</a>
         </div>
     </div>
 
-    <!-- 3. FAQ PAGE -->
+    <!-- FAQ -->
     <div id="faqPage" class="page">
-        <h2 style="margin-bottom: 20px;">Частые вопросы</h2>
+        <h2 class="page-title chrome-text">FAQ</h2>
         <div class="faq-list">
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Как быстро приходят деньги?
-                    <span class="faq-arrow">▼</span>
-                </div>
-                <div class="faq-answer">
-                    Обычно это занимает от 1 до 5 минут после подтверждения оплаты. Деньги поступают напрямую на баланс вашего Steam кошелька.
-                </div>
+                <div class="faq-question" onclick="toggleFaq(this)">Как быстро приходит баланс? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">От 1 до 5 минут после оплаты. Зачисление идёт напрямую на кошелёк Steam, без кодов и ключей.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Безопасно ли использовать мой логин?
-                    <span class="faq-arrow">▼</span>
-                </div>
-                <div class="faq-answer">
-                    Да, мы используем только публичные данные вашего профиля для идентификации заказа. Мы никогда не запрашиваем пароль или доступ к аккаунту.
-                </div>
+                <div class="faq-question" onclick="toggleFaq(this)">Это безопасно для аккаунта? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Да. Нам нужен только никнейм. Пароль и доступ к аккаунту мы никогда не запрашиваем.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Какие способы оплаты доступны?
-                    <span class="faq-arrow">▼</span>
-                </div>
-                <div class="faq-answer">
-                    Мы принимаем банковские карты РФ, криптовалюту (USDT, BTC) и электронные кошельки.
-                </div>
+                <div class="faq-question" onclick="toggleFaq(this)">Чем можно оплатить? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Карты РФ, СБП, криптовалюта (USDT, BTC) и электронные кошельки.</div>
             </div>
-             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Что делать, если деньги не пришли?
-                    <span class="faq-arrow">▼</span>
-                </div>
-                <div class="faq-answer">
-                    Если прошло более 1 часа, сохраните чек об оплате и сразу же обратитесь в нашу техническую поддержку через меню справа сверху.
-                </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Баланс не пришёл, что делать? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Если прошло больше часа — напиши в поддержку через меню (⋮), приложи чек. Решим быстро.</div>
             </div>
         </div>
-        <a href="#" class="back-link" onclick="navigateTo('home'); return false;" style="margin-top: 30px;">← На главную</a>
+        <div style="text-align:center;"><a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a></div>
     </div>
 
-    <!-- 4. SUPPORT PAGE -->
+    <!-- SUPPORT -->
     <div id="supportPage" class="page">
-        <div class="form-card" style="text-align: center;">
-            <h2>Техническая поддержка</h2>
-            <p style="color: var(--text-muted); margin: 20px 0;">Мы онлайн 24/7. Напишите нам, и мы решим любой вопрос.</p>
-            <button class="cta-button" style="background: #ff416c; box-shadow: 0 0 20px rgba(255, 65, 108, 0.5);" onclick="alert('Переход к чату поддержки...')">
-                НАПИСАТЬ В ЧАТ
-            </button>
-            <a href="#" class="back-link" onclick="navigateTo('home'); return false;">← На главную</a>
+        <div class="form-card" style="text-align:center;">
+            <h2 class="form-title chrome-text">Поддержка</h2>
+            <p style="color: var(--text-muted); margin: 16px 0 24px; font-size: 14px;">Онлайн 24/7. Пиши — разрулим любой вопрос.</p>
+            <button class="cta-button cta-purple btn-full" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
+            <br>
+            <a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a>
         </div>
     </div>
 
     <script>
-        // Initialize Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Navigation Logic
         function navigateTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId + 'Page').classList.add('active');
@@ -601,103 +526,67 @@
             setTimeout(() => {
                 document.getElementById('reviewsSection').scrollIntoView({ behavior: 'smooth' });
             }, 100);
-            closeMenu();
         }
 
-        function openSupport() {
-            navigateTo('support');
-        }
+        function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('active'); }
+        function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
 
-        // Menu Toggle
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            menu.classList.toggle('active');
-        }
-
-        function closeMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            menu.classList.remove('active');
-        }
-
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function(e) {
             const menu = document.getElementById('dropdownMenu');
             const btn = document.querySelector('.menu-btn');
-            if (!menu.contains(event.target) && !btn.contains(event.target)) {
-                closeMenu();
-            }
+            if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
         });
 
-        // FAQ Accordion
-        function toggleFaq(element) {
-            const item = element.parentElement;
-            item.classList.toggle('active');
-        }
+        function toggleFaq(el) { el.parentElement.classList.toggle('active'); }
 
-        // Top Up Logic (Rubles, 3% Commission)
         let currentAmount = 1000;
         const commissionRate = 0.03;
 
         function selectAmount(chipEl, val) {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             chipEl.classList.add('selected');
-            
             currentAmount = val;
-            document.getElementById('customAmountInput').value = ''; 
+            document.getElementById('customAmountInput').value = '';
             updatePriceDisplay();
         }
 
         function clearChipsSelection() {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             const val = parseFloat(document.getElementById('customAmountInput').value);
-            if(!isNaN(val)) {
-                currentAmount = val;
-                updatePriceDisplay();
-            }
+            if (!isNaN(val)) { currentAmount = val; updatePriceDisplay(); }
         }
 
         function updatePriceDisplay() {
             const comm = currentAmount * commissionRate;
             const total = currentAmount + comm;
-            
-            document.getElementById('commissionDisplay').textContent = `${Math.round(comm)} ₽`;
-            document.getElementById('totalDisplay').textContent = `${Math.round(total)} ₽`;
+            document.getElementById('commissionDisplay').textContent = Math.round(comm) + ' ₽';
+            document.getElementById('totalDisplay').textContent = Math.round(total) + ' ₽';
         }
 
-        function processPayment() {
+        function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
-            if(!login) {
-                tg.showAlert("Введите логин Steam!");
-                return;
-            }
-            if(currentAmount <= 0) {
-                tg.showAlert("Введите корректную сумму!");
-                return;
-            }
+            if (!login) { tg.showAlert('Введи логин Steam!'); return; }
+            if (currentAmount <= 0) { tg.showAlert('Введи корректную сумму!'); return; }
 
             const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "ОБРАБОТКА...";
+            const original = btn.innerText;
+            btn.innerText = 'ОБРАБОТКА...';
             btn.disabled = true;
 
             setTimeout(() => {
-                btn.innerText = originalText;
+                btn.innerText = original;
                 btn.disabled = false;
-                
-                // Success Message for Direct Top-up
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 tg.showPopup({
-                    title: "Успешно!",
-                    message: `Сумма ${Math.round(currentAmount)} ₽ будет зачислена на аккаунт ${login} в течение нескольких минут.`,
-                    buttons: [{type: "ok"}]
+                    title: 'Готово ⚡',
+                    message: Math.round(currentAmount) + ' ₽ упадут на баланс ' + login + ' в течение нескольких минут.',
+                    buttons: [{ type: 'ok' }]
                 });
-                
                 navigateTo('home');
             }, 2000);
         }
 
-        // Init price
         updatePriceDisplay();
-
     </script>
 </body>
 </html>
