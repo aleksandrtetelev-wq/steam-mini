@@ -15,6 +15,7 @@
             --text-muted: #bfaee0;
             --card-bg: rgba(255, 255, 255, 0.05);
             --border-color: rgba(157, 78, 221, 0.3);
+            --success-green: #2ecc71;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -38,7 +39,7 @@
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            background: linear-gradient(to bottom, var(--bg-dark), transparent);
+            background: linear-gradient(to bottom, var(--bg-dark) 80%, transparent);
         }
 
         .logo-text {
@@ -127,35 +128,38 @@
             position: relative;
             width: 100%;
             max-width: 500px;
+            margin-top: 20px;
         }
 
-        /* Animated Background Logo */
+        /* Animated Background Logo - BRIGHTER VERSION */
         .steam-logo-bg {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239d4edd" opacity="0.1"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="3"/></svg>'); 
+            width: 350px;
+            height: 350px;
+            /* Using a bright SVG path for Steam logo with higher opacity and glow */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239d4edd" opacity="0.4"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="3"/></svg>'); 
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
-            filter: drop-shadow(0 0 20px var(--neon-glow));
+            filter: drop-shadow(0 0 30px var(--neon-glow)) brightness(1.2);
             animation: pulseGlow 3s infinite alternate;
             z-index: -1;
             pointer-events: none;
         }
 
         @keyframes pulseGlow {
-            0% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); }
-            100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.05); }
+            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.95); filter: drop-shadow(0 0 20px var(--neon-glow)); }
+            100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); filter: drop-shadow(0 0 40px var(--neon-glow)); }
         }
 
         .welcome-text h1 {
             font-size: 28px;
             margin-bottom: 10px;
             line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         
         .welcome-text p {
@@ -201,11 +205,25 @@
             100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
-        /* Reviews Marquee */
+        /* Reviews Container - Hidden initially, requires scroll */
+        .reviews-wrapper {
+            width: 100%;
+            margin-top: 60px; /* Big gap to force scrolling */
+            padding-bottom: 20px;
+        }
+        
+        .reviews-header {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .reviews-container {
             width: 100%;
             overflow: hidden;
-            margin-top: 40px;
             background: rgba(255,255,255,0.03);
             padding: 15px 0;
             border-top: 1px solid var(--border-color);
@@ -315,6 +333,18 @@
         }
         .back-link:hover { color: var(--primary-purple); }
 
+        /* Status Badge for Direct Top-up info */
+        .info-badge {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            color: var(--success-green);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
         /* --- FAQ PAGE STYLES --- */
         .faq-list {
             width: 90%;
@@ -360,7 +390,7 @@
         }
 
         .faq-item.active .faq-answer {
-            max-height: 200px; /* Arbitrary large number */
+            max-height: 200px;
             padding: 15px 20px;
         }
 
@@ -411,42 +441,45 @@
             </div>
         </div>
 
-        <!-- Scrolling Reviews -->
-        <div class="reviews-container" id="reviewsSection">
-            <div class="marquee-track">
-                <!-- Review 1 -->
-                <div class="review-card">
-                    <span class="stars">★★★★★</span>
-                    <span class="review-user">@Alex_Gamer</span>
-                    <span class="review-text">Пришло за 2 минуты! Топ!</span>
-                </div>
-                <!-- Review 2 -->
-                <div class="review-card">
-                    <span class="stars">★★★★★</span>
-                    <span class="review-user">@ProPlayer99</span>
-                    <span class="review-text">Лучшие цены, рекомендую всем.</span>
-                </div>
-                <!-- Review 3 -->
-                <div class="review-card">
-                    <span class="stars">★★★★☆</span>
-                    <span class="review-user">@StreamSniper</span>
-                    <span class="review-text">Удобный интерфейс, все понятно.</span>
-                </div>
-                 <!-- Duplicate for seamless loop -->
-                 <div class="review-card">
-                    <span class="stars">★★★★★</span>
-                    <span class="review-user">@Alex_Gamer</span>
-                    <span class="review-text">Пришло за 2 минуты! Топ!</span>
-                </div>
-                <div class="review-card">
-                    <span class="stars">★★★★★</span>
-                    <span class="review-user">@ProPlayer99</span>
-                    <span class="review-text">Лучшие цены, рекомендую всем.</span>
-                </div>
-                <div class="review-card">
-                    <span class="stars">★★★★☆</span>
-                    <span class="review-user">@StreamSniper</span>
-                    <span class="review-text">Удобный интерфейс, все понятно.</span>
+        <!-- Scrolling Reviews - Moved Down -->
+        <div class="reviews-wrapper" id="reviewsSection">
+            <div class="reviews-header">Что говорят наши клиенты</div>
+            <div class="reviews-container">
+                <div class="marquee-track">
+                    <!-- Review 1 -->
+                    <div class="review-card">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-user">@Alex_Gamer</span>
+                        <span class="review-text">Деньги пришли мгновенно!</span>
+                    </div>
+                    <!-- Review 2 -->
+                    <div class="review-card">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-user">@ProPlayer99</span>
+                        <span class="review-text">Лучшие курсы рубля к доллару.</span>
+                    </div>
+                    <!-- Review 3 -->
+                    <div class="review-card">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-user">@StreamSniper</span>
+                        <span class="review-text">Поддержка отвечает быстро.</span>
+                    </div>
+                     <!-- Duplicate for seamless loop -->
+                     <div class="review-card">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-user">@Alex_Gamer</span>
+                        <span class="review-text">Деньги пришли мгновенно!</span>
+                    </div>
+                    <div class="review-card">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-user">@ProPlayer99</span>
+                        <span class="review-text">Лучшие курсы рубля к доллару.</span>
+                    </div>
+                    <div class="review-card">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-user">@StreamSniper</span>
+                        <span class="review-text">Поддержка отвечает быстро.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -455,7 +488,10 @@
     <!-- 2. TOP UP PAGE -->
     <div id="topupPage" class="page">
         <div class="form-card">
-            <h2 style="margin-bottom: 20px; text-align: center;">Пополнение Steam</h2>
+            <h2 style="margin-bottom: 10px; text-align: center;">Пополнение Steam</h2>
+            <div class="info-badge">
+                💳 Прямое зачисление на баланс аккаунта
+            </div>
             
             <div class="input-group">
                 <label class="input-label">Логин Steam</label>
@@ -463,27 +499,27 @@
             </div>
 
             <div class="input-group">
-                <label class="input-label">Выберите сумму ($)</label>
+                <label class="input-label">Выберите сумму (₽)</label>
                 <div class="amount-chips">
-                    <div class="chip" onclick="selectAmount(this, 5)">$5</div>
-                    <div class="chip selected" onclick="selectAmount(this, 10)">$10</div>
-                    <div class="chip" onclick="selectAmount(this, 20)">$20</div>
-                    <div class="chip" onclick="selectAmount(this, 50)">$50</div>
+                    <div class="chip" onclick="selectAmount(this, 500)">500 ₽</div>
+                    <div class="chip selected" onclick="selectAmount(this, 1000)">1000 ₽</div>
+                    <div class="chip" onclick="selectAmount(this, 2000)">2000 ₽</div>
+                    <div class="chip" onclick="selectAmount(this, 5000)">5000 ₽</div>
                 </div>
                 <input type="number" class="custom-input" placeholder="Или своя сумма" id="customAmountInput" oninput="clearChipsSelection()">
             </div>
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; color: var(--text-muted);">
-                <span>Комиссия:</span>
-                <span id="commissionDisplay">$0.50</span>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: var(--text-muted);">
+                <span>Комиссия (3%):</span>
+                <span id="commissionDisplay">30 ₽</span>
             </div>
              <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 18px; font-weight: bold;">
-                <span>Итого:</span>
-                <span id="totalDisplay" style="color: var(--primary-purple);">$10.50</span>
+                <span>Итого к оплате:</span>
+                <span id="totalDisplay" style="color: var(--primary-purple);">1030 ₽</span>
             </div>
 
             <button class="cta-button" style="width: 100%;" onclick="processPayment()">
-                ОПЛАТИТЬ И ПОЛУЧИТЬ КОД
+                ОПЛАТИТЬ И ЗАЧИСЛИТЬ
             </button>
 
             <a href="#" class="back-link" onclick="navigateTo('home'); return false;">← Вернуться назад</a>
@@ -496,11 +532,11 @@
         <div class="faq-list">
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    Как быстро приходит код?
+                    Как быстро приходят деньги?
                     <span class="faq-arrow">▼</span>
                 </div>
                 <div class="faq-answer">
-                    Обычно это занимает от 1 до 5 минут. Если прошло больше часа — напишите в поддержку.
+                    Обычно это занимает от 1 до 5 минут после подтверждения оплаты. Деньги поступают напрямую на баланс вашего Steam кошелька.
                 </div>
             </div>
             <div class="faq-item">
@@ -509,7 +545,7 @@
                     <span class="faq-arrow">▼</span>
                 </div>
                 <div class="faq-answer">
-                    Да, мы используем только публичные данные вашего профиля для идентификации заказа. Мы никогда не запрашиваем пароль.
+                    Да, мы используем только публичные данные вашего профиля для идентификации заказа. Мы никогда не запрашиваем пароль или доступ к аккаунту.
                 </div>
             </div>
             <div class="faq-item">
@@ -518,23 +554,23 @@
                     <span class="faq-arrow">▼</span>
                 </div>
                 <div class="faq-answer">
-                    Мы принимаем банковские карты, криптовалюту (USDT, BTC) и электронные кошельки.
+                    Мы принимаем банковские карты РФ, криптовалюту (USDT, BTC) и электронные кошельки.
                 </div>
             </div>
              <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    Что делать, если код не активировался?
+                    Что делать, если деньги не пришли?
                     <span class="faq-arrow">▼</span>
                 </div>
                 <div class="faq-answer">
-                    Сохраните скриншот ошибки и сразу же обратитесь в нашу техническую поддержку через меню справа сверху.
+                    Если прошло более 1 часа, сохраните чек об оплате и сразу же обратитесь в нашу техническую поддержку через меню справа сверху.
                 </div>
             </div>
         </div>
         <a href="#" class="back-link" onclick="navigateTo('home'); return false;" style="margin-top: 30px;">← На главную</a>
     </div>
 
-    <!-- 4. SUPPORT PAGE (Simple Redirect Simulation) -->
+    <!-- 4. SUPPORT PAGE -->
     <div id="supportPage" class="page">
         <div class="form-card" style="text-align: center;">
             <h2>Техническая поддержка</h2>
@@ -551,22 +587,12 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        
-        // Apply Theme Colors if available
-        if(tg.themeParams) {
-            // Optional: Override CSS variables based on TG theme if needed, 
-            // but we kept custom purple theme as requested.
-        }
 
         // Navigation Logic
         function navigateTo(pageId) {
-            // Hide all pages
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            // Show target page
             document.getElementById(pageId + 'Page').classList.add('active');
-            // Close menu if open
             closeMenu();
-            // Scroll to top
             window.scrollTo(0, 0);
         }
 
@@ -605,25 +631,19 @@
         // FAQ Accordion
         function toggleFaq(element) {
             const item = element.parentElement;
-            // Close others (optional)
-            // document.querySelectorAll('.faq-item').forEach(i => {
-            //     if(i !== item) i.classList.remove('active');
-            // });
             item.classList.toggle('active');
         }
 
-        // Top Up Logic
-        let currentAmount = 10;
-        const commissionRate = 0.05;
+        // Top Up Logic (Rubles, 3% Commission)
+        let currentAmount = 1000;
+        const commissionRate = 0.03;
 
         function selectAmount(chipEl, val) {
-            // Remove selection from all chips
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-            // Add to clicked
             chipEl.classList.add('selected');
             
             currentAmount = val;
-            document.getElementById('customAmountInput').value = ''; // Clear manual input
+            document.getElementById('customAmountInput').value = ''; 
             updatePriceDisplay();
         }
 
@@ -640,8 +660,8 @@
             const comm = currentAmount * commissionRate;
             const total = currentAmount + comm;
             
-            document.getElementById('commissionDisplay').textContent = `$${comm.toFixed(2)}`;
-            document.getElementById('totalDisplay').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('commissionDisplay').textContent = `${Math.round(comm)} ₽`;
+            document.getElementById('totalDisplay').textContent = `${Math.round(total)} ₽`;
         }
 
         function processPayment() {
@@ -655,7 +675,6 @@
                 return;
             }
 
-            // Simulate loading
             const btn = event.target;
             const originalText = btn.innerText;
             btn.innerText = "ОБРАБОТКА...";
@@ -665,27 +684,15 @@
                 btn.innerText = originalText;
                 btn.disabled = false;
                 
-                // Generate Fake Code
-                const code = generateCode();
+                // Success Message for Direct Top-up
                 tg.showPopup({
                     title: "Успешно!",
-                    message: `Ваш код: ${code}`,
+                    message: `Сумма ${Math.round(currentAmount)} ₽ будет зачислена на аккаунт ${login} в течение нескольких минут.`,
                     buttons: [{type: "ok"}]
                 });
                 
-                // In real app, you would redirect to success screen here
                 navigateTo('home');
             }, 2000);
-        }
-
-        function generateCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < 25; i++) {
-                if (i > 0 && i % 5 === 0) result += '-';
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
         }
 
         // Init price
