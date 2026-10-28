@@ -66,6 +66,15 @@
         .brand-logo { width: 24px; height: 24px; filter: grayscale(100%) brightness(1.5); }
         .brand-name { font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; }
 
+        /* Крест вместо буквы T */
+        .t-cross {
+            height: 20px;
+            width: auto;
+            vertical-align: -4px;
+            margin-right: 1px;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.35));
+        }
+
         .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 5px; }
 
         .dropdown-menu {
@@ -99,7 +108,7 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- ГЛАВНАЯ (герой = весь первый экран, отзывы ниже свайпа) --- */
+        /* --- ГЛАВНАЯ --- */
         .hero {
             text-align: center;
             padding: 40px 20px 20px;
@@ -116,26 +125,18 @@
         }
         .hero p { color: var(--text-muted); font-size: 15px; margin-bottom: 50px; max-width: 300px; }
 
-        /* --- КНОПКА С ШИПАМИ --- */
+        /* --- КНОПКА С ХРОМ-ШИПАМИ (как на референсе) --- */
         .spike-wrap { position: relative; display: inline-block; }
 
-        /* Шипы: небольшие, хаотичные, с закруглёнными кончиками */
-        .spike {
+        .spikes-svg {
             position: absolute;
-            width: 10px; height: 16px;
-            background: linear-gradient(0deg, #3d3d3d 0%, #8c8c8c 55%, #cfcfcf 100%);
-            border-radius: 50% 50% 0 0 / 100% 100% 0 0; /* закруглённый кончик */
+            left: -18px; top: -22px;
+            width: calc(100% + 36px);
+            height: calc(100% + 44px);
             z-index: 1;
             pointer-events: none;
+            filter: drop-shadow(0 0 6px rgba(255,255,255,0.18));
         }
-        .spike:nth-child(1) { top: -11px; left: 16%;  transform: rotate(-18deg); }
-        .spike:nth-child(2) { top: -13px; left: 46%;  transform: rotate(6deg);   height: 18px; width: 9px; }
-        .spike:nth-child(3) { top: -10px; right: 14%; transform: rotate(22deg);  height: 14px; }
-        .spike:nth-child(4) { bottom: -11px; left: 24%;  transform: rotate(196deg); height: 15px; }
-        .spike:nth-child(5) { bottom: -13px; right: 30%; transform: rotate(172deg); height: 17px; width: 9px; }
-        .spike:nth-child(6) { bottom: -10px; right: 10%; transform: rotate(205deg); height: 13px; }
-        .spike:nth-child(7) { left: -9px;  top: 30%;  transform: rotate(-72deg);  height: 13px; }
-        .spike:nth-child(8) { right: -9px; top: 52%;  transform: rotate(78deg);   height: 14px; }
 
         .melt-btn {
             font-family: 'Unbounded', sans-serif;
@@ -155,7 +156,6 @@
         .melt-btn:active { transform: scale(0.95); }
         .btn-full { width: 100%; }
 
-        /* Подсказка про свайп */
         .scroll-hint {
             margin-top: 60px;
             color: var(--text-muted);
@@ -284,9 +284,11 @@
     <div class="bg-star"><img src="logo.png" alt="" onerror="this.style.display='none'"></div>
 
     <header>
+        <!-- Клик по бренду = на главную -->
         <div class="brand-area" onclick="navigateTo('home')">
             <img src="logo.png" class="brand-logo" alt="" onerror="this.style.display='none'">
-            <div class="brand-name chrome-text">TOP-UP</div>
+            <!-- Крест вместо буквы T -->
+            <span class="brand-name chrome-text"><img class="t-cross" src="cross.png" onerror="this.outerHTML='T'">OP-UP</span>
         </div>
         <button class="menu-btn" onclick="toggleMenu()">⋮</button>
         <div class="dropdown-menu" id="dropdownMenu">
@@ -315,10 +317,37 @@
             <h1 class="chrome-text">Пополняй Steam<br>без правил</h1>
             <p>Быстро. Анонимно. По-своему. Баланс падает на твой аккаунт за минуты.</p>
 
-            <!-- Кнопка с шипами, БЕЗ капель -->
+            <!-- Кнопка: форма прежняя, вокруг — острые хром-шипы как на референсе -->
             <div class="spike-wrap">
-                <span class="spike"></span><span class="spike"></span><span class="spike"></span><span class="spike"></span>
-                <span class="spike"></span><span class="spike"></span><span class="spike"></span><span class="spike"></span>
+                <svg class="spikes-svg" viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="chromeSpike" x1="0" y1="1" x2="0" y2="0">
+                            <stop offset="0" stop-color="#3c3c3c"/>
+                            <stop offset="0.45" stop-color="#8f8f8f"/>
+                            <stop offset="0.8" stop-color="#e8e8e8"/>
+                            <stop offset="1" stop-color="#ffffff"/>
+                        </linearGradient>
+                        <!-- Изогнутый острый шип -->
+                        <path id="thorn" d="M-5 10 Q-1.5 -2 0 -13 Q1.5 -2 5 10 Z"/>
+                    </defs>
+                    <g fill="url(#chromeSpike)">
+                        <!-- верхние шипы (хаотичные углы) -->
+                        <use href="#thorn" transform="translate(52,26) rotate(-22)"/>
+                        <use href="#thorn" transform="translate(112,24) rotate(7) scale(1.25)"/>
+                        <use href="#thorn" transform="translate(182,25) rotate(-9)"/>
+                        <use href="#thorn" transform="translate(243,27) rotate(24) scale(0.9)"/>
+                        <!-- нижние шипы -->
+                        <use href="#thorn" transform="translate(72,64) rotate(198)"/>
+                        <use href="#thorn" transform="translate(146,66) rotate(172) scale(1.2)"/>
+                        <use href="#thorn" transform="translate(218,64) rotate(206) scale(0.95)"/>
+                        <!-- боковые шипы -->
+                        <use href="#thorn" transform="translate(22,40) rotate(-80) scale(0.9)"/>
+                        <use href="#thorn" transform="translate(278,50) rotate(78) scale(0.9)"/>
+                        <!-- диагональные хаотичные -->
+                        <use href="#thorn" transform="translate(30,28) rotate(-45) scale(0.8)"/>
+                        <use href="#thorn" transform="translate(270,62) rotate(140) scale(0.8)"/>
+                    </g>
+                </svg>
                 <button class="melt-btn" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
             </div>
 
@@ -360,7 +389,6 @@
             <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
             <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
 
-            <!-- Кнопка БЕЗ капель и шипов, спокойная -->
             <button class="melt-btn btn-full" onclick="processPayment(event)">ОПЛАТИТЬ</button>
 
             <div style="text-align: center;">
