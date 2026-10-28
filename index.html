@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050505; /* Почти черный */
+            --bg: #050505;
             --chrome-light: #ffffff;
             --chrome-mid: #a0a0a0;
             --chrome-dark: #333333;
@@ -32,25 +32,18 @@
         /* --- ФОНОВАЯ ЗВЕЗДА --- */
         .bg-star {
             position: fixed;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 120vw; /* Огромная, выходит за края */
-            height: 120vw;
+            width: 120vw; height: 120vw;
             z-index: -1;
-            opacity: 0.15; /* Еле видна */
+            opacity: 0.15;
             pointer-events: none;
-            filter: grayscale(100%) contrast(1.2); /* Делаем ч/б */
+            filter: grayscale(100%) contrast(1.2);
         }
-        .bg-star img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            animation: rotateSlow 60s linear infinite;
-        }
+        .bg-star img { width: 100%; height: 100%; object-fit: contain; animation: rotateSlow 60s linear infinite; }
         @keyframes rotateSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* --- ХРОМИРОВАННЫЙ ТЕКСТ --- */
+        /* --- ХРОМ-ТЕКСТ --- */
         .chrome-text {
             background: linear-gradient(180deg, #fff 0%, #dcdcdc 40%, #555 50%, #fff 60%, #888 100%);
             -webkit-background-clip: text;
@@ -59,7 +52,7 @@
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
         }
 
-        /* --- HEADER --- */
+        /* --- ШАПКА --- */
         header {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -71,36 +64,12 @@
             background: linear-gradient(to bottom, rgba(5,5,5,0.9), transparent);
         }
 
-        .brand-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-        
-        .brand-logo {
-            width: 24px;
-            height: 24px;
-            filter: grayscale(100%) brightness(1.5);
-        }
+        .brand-area { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .brand-logo { width: 24px; height: 24px; filter: grayscale(100%) brightness(1.5); }
+        .brand-name { font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; }
 
-        .brand-name {
-            font-family: 'Unbounded', sans-serif;
-            font-weight: 900;
-            font-size: 16px;
-            letter-spacing: 2px;
-        }
+        .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 5px; }
 
-        .menu-btn {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        /* Dropdown Menu */
         .dropdown-menu {
             position: absolute;
             top: 60px; right: 16px;
@@ -116,115 +85,131 @@
         .dropdown-menu.active { opacity: 1; visibility: visible; transform: scale(1); }
 
         .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            padding: 14px 18px;
+            display: flex; align-items: center; gap: 12px;
+            width: 100%; padding: 14px 18px;
             background: none; border: none;
             color: var(--chrome-mid);
             font-family: 'Manrope', sans-serif;
             font-size: 14px; font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+            cursor: pointer; transition: all 0.2s;
         }
         .menu-item:active { background: rgba(255,255,255,0.05); color: #fff; padding-left: 24px; }
-        
-        /* Иконки меню (SVG шипы) */
-        .menu-icon {
-            width: 16px; height: 16px;
-            fill: currentColor;
-        }
+        .menu-icon { width: 16px; height: 16px; fill: currentColor; }
 
-        /* --- PAGES --- */
+        /* --- СТРАНИЦЫ --- */
         .page { display: none; padding: 90px 0 40px; animation: fadeIn 0.4s ease-out; min-height: 100vh; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- HOME --- */
+        /* --- ГЛАВНАЯ --- */
+        /* Герой занимает ВЕСЬ первый экран: отзывы гарантированно ниже свайпа */
         .hero {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px 20px;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            min-height: 60vh;
+            min-height: calc(100vh - 130px);
         }
 
         .hero h1 {
             font-family: 'Unbounded', sans-serif;
-            font-size: 32px;
-            font-weight: 900;
-            line-height: 1.2;
-            text-transform: uppercase;
+            font-size: 30px; font-weight: 900;
+            line-height: 1.2; text-transform: uppercase;
             margin-bottom: 16px;
         }
-        .hero p {
-            color: var(--text-muted);
-            font-size: 15px;
-            margin-bottom: 50px;
-            max-width: 280px;
-        }
+        .hero p { color: var(--text-muted); font-size: 15px; margin-bottom: 50px; max-width: 300px; }
 
-        /* --- ТАЮЩАЯ КНОПКА (MELTING METAL) --- */
-        .melt-btn-container {
-            position: relative;
-            display: inline-block;
-        }
+        /* --- КНОПКА ИЗ ТЁМНОГО СЕРЕБРА + КАПЛИ --- */
+        .melt-btn-container { position: relative; display: inline-block; }
+        .melt-btn-container.btn-full { display: block; }
 
         .melt-btn {
             font-family: 'Unbounded', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: #000;
-            background: linear-gradient(180deg, #fff 0%, #ccc 40%, #666 60%, #fff 100%);
+            font-size: 16px; font-weight: 700; letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            /* Тёмное натуральное серебро, как металл на лого */
+            background: linear-gradient(180deg, #d6d6d6 0%, #8c8c8c 35%, #4a4a4a 55%, #9e9e9e 100%);
             border: none;
             padding: 18px 50px;
             cursor: pointer;
             clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px));
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            box-shadow: 0 0 18px rgba(255,255,255,0.12), 0 8px 24px rgba(0,0,0,0.7);
             position: relative;
             z-index: 2;
             transition: transform 0.1s;
         }
         .melt-btn:active { transform: scale(0.95); }
 
-        /* Капли металла */
+        /* Набухшие капли, висящие на нижней грани кнопки */
+        .melt-btn::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; bottom: -7px;
+            height: 10px;
+            background:
+                radial-gradient(circle at 12% 0, #8c8c8c 3px, transparent 4px),
+                radial-gradient(circle at 34% 0, #a8a8a8 4px, transparent 5px),
+                radial-gradient(circle at 58% 0, #7a7a7a 3px, transparent 4px),
+                radial-gradient(circle at 82% 0, #9a9a9a 4px, transparent 5px);
+            background-repeat: no-repeat;
+            z-index: 1;
+            animation: swell 3s infinite ease-in-out;
+        }
+        @keyframes swell {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.5); }
+        }
+
+        /* Падающие капли: набухает -> растягивается -> отрывается -> падает с ускорением */
         .drop {
             position: absolute;
-            background: linear-gradient(180deg, #fff, #888);
+            top: 100%;
+            margin-top: -2px;
+            width: 7px; height: 11px;
+            background: radial-gradient(circle at 35% 25%, #ffffff 0%, #b5b5b5 40%, #3f3f3f 100%);
             border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            width: 8px;
-            height: 12px;
-            bottom: -5px;
             opacity: 0;
-            animation: drip 2.5s infinite ease-in;
+            filter: drop-shadow(0 0 4px rgba(255,255,255,0.25));
+            animation: drip 3s infinite;
             z-index: 1;
+            pointer-events: none;
         }
-        .drop:nth-child(1) { left: 20%; animation-delay: 0s; }
-        .drop:nth-child(2) { left: 50%; animation-delay: 1.2s; width: 6px; height: 10px; }
-        .drop:nth-child(3) { left: 80%; animation-delay: 0.6s; }
+        .drop:nth-child(2) { left: 12%; animation-delay: 0s;   animation-duration: 2.8s; }
+        .drop:nth-child(3) { left: 38%; animation-delay: 0.9s; animation-duration: 3.4s; width: 6px; height: 9px; }
+        .drop:nth-child(4) { left: 63%; animation-delay: 1.7s; animation-duration: 3s; }
+        .drop:nth-child(5) { left: 87%; animation-delay: 2.4s; animation-duration: 3.6s; width: 5px; height: 8px; }
 
         @keyframes drip {
-            0% { transform: translateY(0) scaleY(1); opacity: 1; }
-            70% { transform: translateY(40px) scaleY(1.5); opacity: 1; }
-            100% { transform: translateY(60px) scaleY(0.5); opacity: 0; }
+            0%   { transform: translateY(0) scale(0.4, 0.4); opacity: 0; }
+            12%  { transform: translateY(2px) scale(0.7, 0.9); opacity: 1; }
+            30%  { transform: translateY(6px) scale(0.9, 1.25); opacity: 1; }
+            55%  { transform: translateY(18px) scale(0.85, 1.45); opacity: 1; }
+            85%  { transform: translateY(62px) scale(0.8, 1.65); opacity: 0.9; }
+            100% { transform: translateY(90px) scale(0.7, 1.8); opacity: 0; }
         }
 
-        /* --- REVIEWS --- */
+        /* Подсказка про свайп */
+        .scroll-hint {
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 0%,100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(8px); opacity: 1; } }
+
+        /* --- ОТЗЫВЫ (видны только после свайпа) --- */
         .reviews-section { padding: 40px 0; }
         .reviews-title {
             font-family: 'Unbounded', sans-serif;
-            text-align: center;
-            font-size: 12px;
-            letter-spacing: 4px;
-            margin-bottom: 20px;
-            color: var(--chrome-mid);
-            text-transform: uppercase;
+            text-align: center; font-size: 12px;
+            letter-spacing: 4px; margin-bottom: 20px;
+            color: var(--chrome-mid); text-transform: uppercase;
         }
         .reviews-container {
-            overflow: hidden;
-            padding: 15px 0;
+            overflow: hidden; padding: 15px 0;
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
             background: rgba(255,255,255,0.02);
@@ -243,11 +228,9 @@
         .review-text { font-size: 13px; color: var(--text-muted); }
         .stars { color: #fff; font-size: 10px; letter-spacing: 2px; margin-bottom: 8px; display: block; }
 
-        /* --- FORMS --- */
+        /* --- ФОРМЫ --- */
         .form-card {
-            margin: 0 auto;
-            width: 92%;
-            max-width: 420px;
+            margin: 0 auto; width: 92%; max-width: 420px;
             background: var(--card-bg);
             border: 1px solid var(--border);
             padding: 30px 24px;
@@ -257,58 +240,38 @@
 
         .form-title {
             font-family: 'Unbounded', sans-serif;
-            font-size: 22px;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 22px; text-align: center;
+            text-transform: uppercase; letter-spacing: 2px;
             margin-bottom: 30px;
         }
 
         .input-label {
-            display: block;
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 8px;
+            display: block; font-size: 11px; letter-spacing: 2px;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
         }
 
         .custom-input {
             width: 100%;
             background: rgba(0,0,0,0.5);
             border: 1px solid var(--border);
-            color: #fff;
-            padding: 16px;
-            font-size: 16px;
-            font-family: 'Manrope', sans-serif;
-            outline: none;
+            color: #fff; padding: 16px; font-size: 16px;
+            font-family: 'Manrope', sans-serif; outline: none;
             clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
-            transition: all 0.2s;
-            margin-bottom: 20px;
+            transition: all 0.2s; margin-bottom: 20px;
         }
-        .custom-input:focus {
-            border-color: #fff;
-            background: rgba(255,255,255,0.05);
-        }
+        .custom-input:focus { border-color: #fff; background: rgba(255,255,255,0.05); }
 
         .amount-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
         .chip {
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border);
             color: var(--text-muted);
-            padding: 12px 0;
-            text-align: center;
-            font-size: 13px; font-weight: 700;
-            cursor: pointer;
+            padding: 12px 0; text-align: center;
+            font-size: 13px; font-weight: 700; cursor: pointer;
             clip-path: polygon(0 6px, 6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
             transition: all 0.2s;
         }
-        .chip.selected {
-            background: #fff;
-            color: #000;
-            border-color: #fff;
-            box-shadow: 0 0 15px rgba(255,255,255,0.3);
-        }
+        .chip.selected { background: #cfcfcf; color: #000; border-color: #cfcfcf; box-shadow: 0 0 15px rgba(255,255,255,0.25); }
 
         .price-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
         .price-total { display: flex; justify-content: space-between; font-size: 20px; font-weight: 800; margin: 20px 0 30px; padding-top: 15px; border-top: 1px solid var(--border); }
@@ -316,14 +279,10 @@
         .btn-full { width: 100%; }
 
         .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: var(--text-muted);
-            font-size: 12px;
-            text-decoration: none;
-            cursor: pointer;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            display: inline-block; margin-top: 20px;
+            color: var(--text-muted); font-size: 12px;
+            text-decoration: none; cursor: pointer;
+            letter-spacing: 1px; text-transform: uppercase;
         }
         .back-link:active { color: #fff; }
 
@@ -337,151 +296,111 @@
             overflow: hidden;
         }
         .faq-question {
-            padding: 18px;
-            display: flex; justify-content: space-between; align-items: center;
-            font-weight: 700; font-size: 14px;
-            cursor: pointer;
-            color: #ddd;
+            padding: 18px; display: flex; justify-content: space-between; align-items: center;
+            font-weight: 700; font-size: 14px; cursor: pointer; color: #ddd;
         }
         .faq-arrow { color: #fff; transition: transform 0.3s; }
         .faq-answer {
             max-height: 0; overflow: hidden;
             transition: max-height 0.3s ease-out, padding 0.3s;
-            padding: 0 18px;
-            color: var(--text-muted);
-            font-size: 13px; line-height: 1.6;
+            padding: 0 18px; color: var(--text-muted); font-size: 13px; line-height: 1.6;
         }
         .faq-item.active .faq-arrow { transform: rotate(180deg); }
-        .faq-item.active .faq-answer { max-height: 200px; padding: 0 18px 18px; }
+        .faq-item.active .faq-answer { max-height: 220px; padding: 0 18px 18px; }
 
         .page-title {
             font-family: 'Unbounded', sans-serif;
-            text-align: center;
-            font-size: 24px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 30px;
+            text-align: center; font-size: 24px;
+            text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px;
         }
     </style>
 </head>
 <body>
 
-    <!-- ФОНОВАЯ ЗВЕЗДА -->
-    <div class="bg-star">
-        <img src="logo.png" alt="" onerror="this.style.display='none'">
-    </div>
+    <div class="bg-star"><img src="logo.png" alt="" onerror="this.style.display='none'"></div>
 
     <header>
-        <!-- Кликабельный бренд -->
         <div class="brand-area" onclick="navigateTo('home')">
-            <img src="logo.png" class="brand-logo" alt="Logo" onerror="this.style.display='none'">
+            <img src="logo.png" class="brand-logo" alt="" onerror="this.style.display='none'">
             <div class="brand-name chrome-text">TOP-UP</div>
         </div>
-        
         <button class="menu-btn" onclick="toggleMenu()">⋮</button>
-        
         <div class="dropdown-menu" id="dropdownMenu">
             <button class="menu-item" onclick="navigateTo('topup')">
-                <!-- Иконка: Шип/Молния -->
                 <svg class="menu-icon" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 Пополнить
             </button>
             <button class="menu-item" onclick="scrollToReviews()">
-                <!-- Иконка: Звезда -->
                 <svg class="menu-icon" viewBox="0 0 24 24"><path d="M12 2l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9z"/></svg>
                 Отзывы
             </button>
             <button class="menu-item" onclick="navigateTo('faq')">
-                <!-- Иконка: Вопрос/Череп (абстракция) -->
                 <svg class="menu-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
                 FAQ
             </button>
             <button class="menu-item" onclick="navigateTo('support')">
-                <!-- Иконка: Щит/Замок -->
                 <svg class="menu-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
                 Поддержка
             </button>
         </div>
     </header>
 
-    <!-- HOME -->
+    <!-- ГЛАВНАЯ -->
     <div id="homePage" class="page active">
         <div class="hero">
-            <h1 class="chrome-text">LIQUID<br>BALANCE</h1>
-            <p>Пополняй Steam без правил. Быстро. Анонимно. В темных тонах.</p>
+            <h1 class="chrome-text">Пополняй Steam<br>без правил</h1>
+            <p>Быстро. Анонимно. По-своему. Баланс падает на твой аккаунт за минуты.</p>
 
             <div class="melt-btn-container">
                 <button class="melt-btn" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
-                <div class="drop"></div>
-                <div class="drop"></div>
-                <div class="drop"></div>
+                <div class="drop"></div><div class="drop"></div><div class="drop"></div><div class="drop"></div>
             </div>
+
+            <div class="scroll-hint">▼ листай вниз ▼</div>
         </div>
 
         <div class="reviews-section" id="reviewsSection">
-            <div class="reviews-title">REVIEWS</div>
+            <div class="reviews-title">Отзывы своих</div>
             <div class="reviews-container">
                 <div class="marquee-track">
-                    <div class="review-card">
-                        <span class="stars">★★★★★</span>
-                        <span class="review-user">@alex_gmrr</span>
-                        <span class="review-text">Баланс упал за 2 минуты, огонь</span>
-                    </div>
-                    <div class="review-card">
-                        <span class="stars">★★★★★</span>
-                        <span class="review-user">@kvnt99</span>
-                        <span class="review-text">Лучший курс рубля, беру постоянно</span>
-                    </div>
-                    <div class="review-card">
-                        <span class="stars">★★★★☆</span>
-                        <span class="review-user">@sniper_xx</span>
-                        <span class="review-text">Поддержка ответила ночью, респект</span>
-                    </div>
-                    <!-- Дубли для бесконечности -->
-                    <div class="review-card">
-                        <span class="stars">★★★★★</span>
-                        <span class="review-user">@alex_gmrr</span>
-                        <span class="review-text">Баланс упал за 2 минуты, огонь</span>
-                    </div>
-                    <div class="review-card">
-                        <span class="stars">★★★★★</span>
-                        <span class="review-user">@kvnt99</span>
-                        <span class="review-text">Лучший курс рубля, беру постоянно</span>
-                    </div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@alex_gmrr</span><span class="review-text">Баланс упал за 2 минуты, огонь</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kvnt99</span><span class="review-text">Лучший курс рубля, беру постоянно</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xx</span><span class="review-text">Поддержка ответила ночью, респект</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@alex_gmrr</span><span class="review-text">Баланс упал за 2 минуты, огонь</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kvnt99</span><span class="review-text">Лучший курс рубля, беру постоянно</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xx</span><span class="review-text">Поддержка ответила ночью, респект</span></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TOPUP -->
+    <!-- ПОПОЛНЕНИЕ -->
     <div id="topupPage" class="page">
         <div class="form-card">
-            <h2 class="form-title chrome-text">TOP UP</h2>
-            
-            <label class="input-label">Steam Login</label>
-            <input type="text" class="custom-input" id="steamLoginInput" placeholder="nickname">
+            <h2 class="form-title chrome-text">Пополнение</h2>
 
-            <label class="input-label">Amount (RUB)</label>
+            <label class="input-label">Логин Steam</label>
+            <input type="text" class="custom-input" id="steamLoginInput" placeholder="твой никнейм">
+
+            <label class="input-label">Сумма (₽)</label>
             <div class="amount-chips">
                 <div class="chip" onclick="selectAmount(this, 500)">500 ₽</div>
                 <div class="chip selected" onclick="selectAmount(this, 1000)">1000 ₽</div>
                 <div class="chip" onclick="selectAmount(this, 2000)">2000 ₽</div>
                 <div class="chip" onclick="selectAmount(this, 5000)">5000 ₽</div>
             </div>
-            <input type="number" class="custom-input" id="customAmountInput" placeholder="custom amount" oninput="clearChipsSelection()">
+            <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" oninput="clearChipsSelection()">
 
-            <div class="price-row"><span>Fee (3%):</span><span id="commissionDisplay">30 ₽</span></div>
-            <div class="price-total"><span class="chrome-text">TOTAL:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
+            <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
+            <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
 
             <div class="melt-btn-container btn-full">
-                <button class="melt-btn btn-full" onclick="processPayment(event)">PAY NOW</button>
-                <div class="drop"></div>
-                <div class="drop"></div>
-                <div class="drop"></div>
+                <button class="melt-btn btn-full" onclick="processPayment(event)">ОПЛАТИТЬ</button>
+                <div class="drop"></div><div class="drop"></div><div class="drop"></div><div class="drop"></div>
             </div>
-            
+
             <div style="text-align: center;">
-                <a class="back-link" onclick="navigateTo('home'); return false;">← back</a>
+                <a class="back-link" onclick="navigateTo('home'); return false;">← назад</a>
             </div>
         </div>
     </div>
@@ -491,39 +410,38 @@
         <h2 class="page-title chrome-text">FAQ</h2>
         <div class="faq-list">
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">How fast? <span class="faq-arrow">▼</span></div>
-                <div class="faq-answer">1-5 minutes. Direct balance top-up, no codes.</div>
+                <div class="faq-question" onclick="toggleFaq(this)">Как быстро приходит баланс? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">От 1 до 5 минут после оплаты. Зачисление идёт напрямую на кошелёк Steam, без кодов и ключей.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">Safe? <span class="faq-arrow">▼</span></div>
-                <div class="faq-answer">Yes. We only need your nickname. No password required.</div>
+                <div class="faq-question" onclick="toggleFaq(this)">Это безопасно для аккаунта? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Да. Нам нужен только твой никнейм. Пароль и доступ к аккаунту мы никогда не запрашиваем.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">Payment methods? <span class="faq-arrow">▼</span></div>
-                <div class="faq-answer">Cards, SBP, Crypto (USDT/BTC).</div>
+                <div class="faq-question" onclick="toggleFaq(this)">Чем можно оплатить? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Карты РФ, СБП, криптовалюта (USDT, BTC) и электронные кошельки.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">Issue? <span class="faq-arrow">▼</span></div>
-                <div class="faq-answer">Contact support via menu if balance doesn't arrive in 1 hour.</div>
+                <div class="faq-question" onclick="toggleFaq(this)">Баланс не пришёл, что делать? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Если прошло больше часа — напиши в поддержку через меню (⋮) и приложи чек. Решим быстро.</div>
             </div>
         </div>
-        <div style="text-align:center;"><a class="back-link" onclick="navigateTo('home'); return false;">← home</a></div>
+        <div style="text-align:center;"><a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a></div>
     </div>
 
-    <!-- SUPPORT -->
+    <!-- ПОДДЕРЖКА -->
     <div id="supportPage" class="page">
         <div class="form-card" style="text-align:center;">
-            <h2 class="form-title chrome-text">SUPPORT</h2>
-            <p style="color: var(--text-muted); margin: 20px 0 30px; font-size: 14px;">Online 24/7. We fix everything.</p>
-            
+            <h2 class="form-title chrome-text">Поддержка</h2>
+            <p style="color: var(--text-muted); margin: 20px 0 30px; font-size: 14px;">Онлайн 24/7. Пиши — разрулим любой вопрос.</p>
+
             <div class="melt-btn-container btn-full">
-                <button class="melt-btn btn-full" onclick="tg.showAlert('Chat opening...')">CONTACT US</button>
-                <div class="drop"></div>
-                <div class="drop"></div>
+                <button class="melt-btn btn-full" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
+                <div class="drop"></div><div class="drop"></div><div class="drop"></div><div class="drop"></div>
             </div>
 
             <div style="text-align: center;">
-                <a class="back-link" onclick="navigateTo('home'); return false;">← home</a>
+                <a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a>
             </div>
         </div>
     </div>
@@ -532,8 +450,7 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        // Force dark theme for TG header if possible
-        if(tg.setHeaderColor) tg.setHeaderColor('#050505');
+        if (tg.setHeaderColor) tg.setHeaderColor('#050505');
 
         function navigateTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -586,12 +503,12 @@
 
         function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
-            if (!login) { tg.showAlert('Enter Steam login!'); return; }
-            if (currentAmount <= 0) { tg.showAlert('Enter valid amount!'); return; }
+            if (!login) { tg.showAlert('Введи логин Steam!'); return; }
+            if (currentAmount <= 0) { tg.showAlert('Введи корректную сумму!'); return; }
 
             const btn = event.target;
             const original = btn.innerText;
-            btn.innerText = 'PROCESSING...';
+            btn.innerText = 'ОБРАБОТКА...';
             btn.disabled = true;
 
             setTimeout(() => {
@@ -599,8 +516,8 @@
                 btn.disabled = false;
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 tg.showPopup({
-                    title: 'Done',
-                    message: Math.round(currentAmount) + ' RUB will be added to ' + login + ' soon.',
+                    title: 'Готово',
+                    message: Math.round(currentAmount) + ' ₽ упадут на баланс ' + login + ' в течение нескольких минут.',
                     buttons: [{ type: 'ok' }]
                 });
                 navigateTo('home');
