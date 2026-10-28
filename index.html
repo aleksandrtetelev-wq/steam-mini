@@ -4,582 +4,693 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Steam Top-Up</title>
-    <!-- Подключаем официальный SDK Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            /* Цвета из темы Telegram по умолчанию, но подкрученные */
-            --tg-bg: #1c1d22;
-            --tg-card: #2b2d36;
-            --tg-text: #ffffff;
-            --tg-hint: #aaaaaa;
-            --tg-accent: #2aabee;
-            --tg-success: #2ecc71;
-            --tg-border: #3f414a;
-            
-            /* Градиенты для красоты */
-            --gradient-primary: linear-gradient(135deg, #2aabee 0%, #1e8bc0 100%);
-            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --bg-dark: #0f0c1b; /* Темно-фиолетовый фон */
+            --primary-purple: #9d4edd; /* Яркий фиолетовый */
+            --secondary-purple: #7b2cbf;
+            --neon-glow: rgba(157, 78, 221, 0.6);
+            --text-main: #ffffff;
+            --text-muted: #bfaee0;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(157, 78, 221, 0.3);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
         body {
-            background-color: var(--tg-bg);
-            color: var(--tg-text);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Хедер */
+        /* --- HEADER & MENU --- */
         header {
-            position: sticky;
+            position: fixed;
             top: 0;
-            z-index: 100;
-            background: rgba(43, 45, 54, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--tg-border);
-            padding: 12px 16px;
+            width: 100%;
+            padding: 15px 20px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, var(--bg-dark), transparent);
         }
 
-        .header-title {
-            font-size: 17px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .back-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
+        .logo-text {
+            font-weight: 800;
             font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
-        .back-btn.hidden { visibility: hidden; }
-
-        /* Основной контейнер */
-        main {
-            padding: 16px;
-            max-width: 500px;
-            margin: 0 auto;
-            animation: slideUp 0.4s ease-out;
+            background: linear-gradient(90deg, #fff, var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Карточки */
-        .card {
-            background-color: var(--tg-card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-card);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .label {
-            font-size: 13px;
-            color: var(--tg-hint);
-            margin-bottom: 8px;
-            display: block;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        /* Инпуты */
-        .input-group {
-            position: relative;
-        }
-
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--tg-border);
-            color: white;
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        input:focus {
-            border-color: var(--tg-accent);
-            box-shadow: 0 0 0 3px rgba(42, 171, 238, 0.15);
-        }
-
-        .currency-symbol {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--tg-hint);
-            font-weight: bold;
-            pointer-events: none;
-        }
-
-        input.with-prefix {
-            padding-left: 32px;
-        }
-
-        /* Быстрые суммы */
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .chip {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--tg-border);
-            color: var(--tg-hint);
-            padding: 10px 0;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .chip.active {
-            background: var(--tg-accent);
-            border-color: var(--tg-accent);
-            color: white;
-            box-shadow: 0 4px 12px rgba(42, 171, 238, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .chip:active { transform: scale(0.95); }
-
-        /* Итоги */
-        .summary-list {
-            list-style: none;
-            margin-top: 16px;
-            border-top: 1px solid var(--tg-border);
-            padding-top: 16px;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: var(--tg-hint);
-        }
-
-        .summary-total {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 12px;
-            font-size: 20px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .total-value {
-            color: var(--tg-success);
-        }
-
-        /* Кнопки */
-        .btn-main {
-            width: 100%;
-            background: var(--gradient-primary);
-            color: white;
+        .menu-btn {
+            background: none;
             border: none;
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 600;
+            color: white;
+            font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(42, 171, 238, 0.4);
+            padding: 5px;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: rgba(20, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 0;
+            width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform-origin: top right;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            visibility: hidden;
+            scale: 0.9;
+        }
+
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            scale: 1;
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 15px;
+            cursor: pointer;
             transition: all 0.2s;
-            margin-top: 8px;
         }
 
-        .btn-main:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 8px rgba(42, 171, 238, 0.3);
+        .menu-item:hover, .menu-item:active {
+            background: rgba(157, 78, 221, 0.1);
+            color: var(--primary-purple);
+            padding-left: 25px;
         }
 
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            box-shadow: none;
-            margin-top: 12px;
+        /* --- PAGES CONTAINER --- */
+        .page {
+            display: none;
+            flex: 1;
+            padding-top: 80px; /* Space for header */
+            padding-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
         }
 
-        /* Экраны */
-        .screen { display: none; }
-        .screen.active { display: block; }
-
-        /* Лоадер */
-        .loader-wrap {
-            height: 60vh;
+        .page.active {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HOME PAGE STYLES --- */
+        .hero-section {
             text-align: center;
-        }
-        
-        .spinner-circle {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top-color: var(--tg-accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 16px;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Успех */
-        .success-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            filter: drop-shadow(0 4px 10px rgba(46, 204, 113, 0.3));
-        }
-
-        .code-display {
-            background: rgba(0,0,0,0.3);
-            border: 1px dashed var(--tg-success);
-            padding: 16px;
-            border-radius: 12px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 18px;
-            letter-spacing: 2px;
-            text-align: center;
-            word-break: break-all;
-            margin: 16px 0;
-            cursor: pointer;
+            padding: 20px;
             position: relative;
+            width: 100%;
+            max-width: 500px;
         }
-        
-        .copy-tooltip {
+
+        /* Animated Background Logo */
+        .steam-logo-bg {
             position: absolute;
-            bottom: -30px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background: var(--tg-success);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            opacity: 0;
-            transition: opacity 0.3s;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239d4edd" opacity="0.1"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="3"/></svg>'); 
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            filter: drop-shadow(0 0 20px var(--neon-glow));
+            animation: pulseGlow 3s infinite alternate;
+            z-index: -1;
             pointer-events: none;
         }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); }
+            100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        .welcome-text h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
         
-        .code-display.copied .copy-tooltip { opacity: 1; }
+        .welcome-text p {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 0 20px var(--neon-glow);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px var(--neon-glow);
+        }
+
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        /* Reviews Marquee */
+        .reviews-container {
+            width: 100%;
+            overflow: hidden;
+            margin-top: 40px;
+            background: rgba(255,255,255,0.03);
+            padding: 15px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 20px;
+            animation: scrollLeft 20s linear infinite;
+            width: fit-content;
+        }
+
+        .review-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 12px;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .review-user { font-size: 12px; color: var(--primary-purple); font-weight: bold; }
+        .review-text { font-size: 13px; color: var(--text-muted); }
+        .stars { color: gold; font-size: 12px; }
+
+        @keyframes scrollLeft {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* --- TOPUP PAGE STYLES --- */
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .custom-input {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .custom-input:focus {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 10px rgba(157, 78, 221, 0.2);
+        }
+
+        .amount-chips {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chip {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 10px 0;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .chip.selected {
+            background: var(--primary-purple);
+            color: white;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 15px var(--neon-glow);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .back-link:hover { color: var(--primary-purple); }
+
+        /* --- FAQ PAGE STYLES --- */
+        .faq-list {
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .faq-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .faq-arrow {
+            transition: transform 0.3s;
+            color: var(--primary-purple);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: rgba(0,0,0,0.1);
+            padding: 0 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .faq-item.active .faq-arrow {
+            transform: rotate(180deg);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px; /* Arbitrary large number */
+            padding: 15px 20px;
+        }
+
+        /* Support Link Style */
+        .support-banner {
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
 
     </style>
 </head>
 <body>
 
+    <!-- Header with Menu -->
     <header>
-        <button id="backBtn" class="back-btn hidden">←</button>
-        <div class="header-title">Steam Top-Up</div>
-        <div style="width: 32px;"></div> <!-- Balance for centering -->
+        <div class="logo-text">STEAM TOP-UP</div>
+        <button class="menu-btn" onclick="toggleMenu()">⋮</button>
+        
+        <div class="dropdown-menu" id="dropdownMenu">
+            <button class="menu-item" onclick="navigateTo('topup')">💰 Пополнить баланс</button>
+            <button class="menu-item" onclick="scrollToReviews()">⭐ Наши отзывы</button>
+            <button class="menu-item" onclick="navigateTo('faq')">❓ FAQ / Помощь</button>
+            <button class="menu-item" onclick="openSupport()">🛠 Тех. поддержка</button>
+        </div>
     </header>
 
-    <main>
-        <!-- HOME SCREEN -->
-        <section id="homeScreen" class="screen active">
-            <div class="card">
-                <span class="label">Логин Steam</span>
-                <div class="input-group">
-                    <input type="text" id="steamLogin" placeholder="Введите ваш никнейм">
-                </div>
-            </div>
-
-            <div class="card">
-                <span class="label">Сумма пополнения ($)</span>
-                <div class="input-group">
-                    <span class="currency-symbol">$</span>
-                    <input type="number" id="amountInput" value="10" class="with-prefix" min="5" max="500">
-                </div>
+    <!-- MAIN CONTENT AREA -->
+    
+    <!-- 1. HOME PAGE -->
+    <div id="homePage" class="page active">
+        <div class="hero-section">
+            <div class="steam-logo-bg"></div>
+            
+            <div class="welcome-text">
+                <h1>Добро пожаловать!<br>В лучший сервис пополнения</h1>
+                <p>Быстро, безопасно и выгодно.<br>Твой игровой мир ждет.</p>
                 
-                <div class="quick-grid" id="quickAmounts">
-                    <div class="chip" data-val="5">$5</div>
-                    <div class="chip active" data-val="10">$10</div>
-                    <div class="chip" data-val="20">$20</div>
-                    <div class="chip" data-val="50">$50</div>
+                <button class="cta-button" onclick="navigateTo('topup')">
+                    ПОПОЛНИТЬ СЕЙЧАС
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrolling Reviews -->
+        <div class="reviews-container" id="reviewsSection">
+            <div class="marquee-track">
+                <!-- Review 1 -->
+                <div class="review-card">
+                    <span class="stars">★★★★★</span>
+                    <span class="review-user">@Alex_Gamer</span>
+                    <span class="review-text">Пришло за 2 минуты! Топ!</span>
+                </div>
+                <!-- Review 2 -->
+                <div class="review-card">
+                    <span class="stars">★★★★★</span>
+                    <span class="review-user">@ProPlayer99</span>
+                    <span class="review-text">Лучшие цены, рекомендую всем.</span>
+                </div>
+                <!-- Review 3 -->
+                <div class="review-card">
+                    <span class="stars">★★★★☆</span>
+                    <span class="review-user">@StreamSniper</span>
+                    <span class="review-text">Удобный интерфейс, все понятно.</span>
+                </div>
+                 <!-- Duplicate for seamless loop -->
+                 <div class="review-card">
+                    <span class="stars">★★★★★</span>
+                    <span class="review-user">@Alex_Gamer</span>
+                    <span class="review-text">Пришло за 2 минуты! Топ!</span>
+                </div>
+                <div class="review-card">
+                    <span class="stars">★★★★★</span>
+                    <span class="review-user">@ProPlayer99</span>
+                    <span class="review-text">Лучшие цены, рекомендую всем.</span>
+                </div>
+                <div class="review-card">
+                    <span class="stars">★★★★☆</span>
+                    <span class="review-user">@StreamSniper</span>
+                    <span class="review-text">Удобный интерфейс, все понятно.</span>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
-                <ul class="summary-list">
-                    <li class="summary-item">
-                        <span>Комиссия сервиса (5%)</span>
-                        <span id="commissionVal">$0.50</span>
-                    </li>
-                    <li class="summary-total">
-                        <span>Итого к оплате</span>
-                        <span id="totalVal" class="total-value">$10.50</span>
-                    </li>
-                </ul>
+    <!-- 2. TOP UP PAGE -->
+    <div id="topupPage" class="page">
+        <div class="form-card">
+            <h2 style="margin-bottom: 20px; text-align: center;">Пополнение Steam</h2>
+            
+            <div class="input-group">
+                <label class="input-label">Логин Steam</label>
+                <input type="text" class="custom-input" placeholder="Введите ваш никнейм" id="steamLoginInput">
             </div>
 
-            <button class="btn-main" onclick="goToConfirm()">Продолжить оплату →</button>
-        </section>
-
-        <!-- CONFIRM SCREEN -->
-        <section id="confirmScreen" class="screen">
-            <div class="card" style="text-align: center; padding: 32px 20px;">
-                <span class="label">Пополняем аккаунт:</span>
-                <h2 id="displayLogin" style="margin: 8px 0 24px 0; font-size: 24px; word-break: break-all;">User</h2>
-                
-                <div style="height: 1px; background: var(--tg-border); margin: 16px 0;"></div>
-                
-                <div class="summary-item" style="justify-content: center; gap: 12px;">
-                    <span>Баланс Steam:</span>
-                    <strong id="displayBalance" style="color: var(--tg-success); font-size: 18px;">$10.00</strong>
+            <div class="input-group">
+                <label class="input-label">Выберите сумму ($)</label>
+                <div class="amount-chips">
+                    <div class="chip" onclick="selectAmount(this, 5)">$5</div>
+                    <div class="chip selected" onclick="selectAmount(this, 10)">$10</div>
+                    <div class="chip" onclick="selectAmount(this, 20)">$20</div>
+                    <div class="chip" onclick="selectAmount(this, 50)">$50</div>
                 </div>
-                <div class="summary-item" style="justify-content: center; gap: 12px;">
-                    <span>К оплате сейчас:</span>
-                    <strong id="displayTotal" style="font-size: 18px;">$10.50</strong>
-                </div>
+                <input type="number" class="custom-input" placeholder="Или своя сумма" id="customAmountInput" oninput="clearChipsSelection()">
             </div>
 
-            <button class="btn-main" style="background: var(--tg-success);" onclick="processPayment()">
-                Оплатить <span id="payBtnText">$10.50</span>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; color: var(--text-muted);">
+                <span>Комиссия:</span>
+                <span id="commissionDisplay">$0.50</span>
+            </div>
+             <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 18px; font-weight: bold;">
+                <span>Итого:</span>
+                <span id="totalDisplay" style="color: var(--primary-purple);">$10.50</span>
+            </div>
+
+            <button class="cta-button" style="width: 100%;" onclick="processPayment()">
+                ОПЛАТИТЬ И ПОЛУЧИТЬ КОД
             </button>
-            <button class="btn-main btn-secondary" onclick="showHome()">Отмена</button>
-        </section>
 
-        <!-- PROCESSING SCREEN -->
-        <section id="processingScreen" class="screen">
-            <div class="loader-wrap">
-                <div class="spinner-circle"></div>
-                <h3>Обработка платежа...</h3>
-                <p style="color: var(--tg-hint); margin-top: 8px; font-size: 14px;">Не закрывайте приложение</p>
-            </div>
-        </section>
+            <a href="#" class="back-link" onclick="navigateTo('home'); return false;">← Вернуться назад</a>
+        </div>
+    </div>
 
-        <!-- SUCCESS SCREEN -->
-        <section id="successScreen" class="screen">
-            <div style="text-align: center;">
-                <div class="success-icon">✅</div>
-                <h2 style="margin-bottom: 8px;">Успешно!</h2>
-                <p style="color: var(--tg-hint);">Ваш ключ активации готов.</p>
-            </div>
-
-            <div class="card">
-                <span class="label">Steam Wallet Code</span>
-                <div class="code-display" id="walletCodeBox" onclick="copyCode(this)">
-                    <span id="generatedCode">XXXXX-XXXXX-XXXXX</span>
-                    <div class="copy-tooltip">Скопировано!</div>
+    <!-- 3. FAQ PAGE -->
+    <div id="faqPage" class="page">
+        <h2 style="margin-bottom: 20px;">Частые вопросы</h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Как быстро приходит код?
+                    <span class="faq-arrow">▼</span>
                 </div>
-                <p style="font-size: 12px; color: var(--tg-hint); text-align: center; margin-top: 8px;">Нажмите на код, чтобы скопировать</p>
+                <div class="faq-answer">
+                    Обычно это занимает от 1 до 5 минут. Если прошло больше часа — напишите в поддержку.
+                </div>
             </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Безопасно ли использовать мой логин?
+                    <span class="faq-arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Да, мы используем только публичные данные вашего профиля для идентификации заказа. Мы никогда не запрашиваем пароль.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Какие способы оплаты доступны?
+                    <span class="faq-arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Мы принимаем банковские карты, криптовалюту (USDT, BTC) и электронные кошельки.
+                </div>
+            </div>
+             <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Что делать, если код не активировался?
+                    <span class="faq-arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Сохраните скриншот ошибки и сразу же обратитесь в нашу техническую поддержку через меню справа сверху.
+                </div>
+            </div>
+        </div>
+        <a href="#" class="back-link" onclick="navigateTo('home'); return false;" style="margin-top: 30px;">← На главную</a>
+    </div>
 
-            <button class="btn-main" onclick="openSteamSite()">Активировать в Steam</button>
-            <button class="btn-main btn-secondary" onclick="resetApp()">Новый заказ</button>
-        </section>
-    </main>
+    <!-- 4. SUPPORT PAGE (Simple Redirect Simulation) -->
+    <div id="supportPage" class="page">
+        <div class="form-card" style="text-align: center;">
+            <h2>Техническая поддержка</h2>
+            <p style="color: var(--text-muted); margin: 20px 0;">Мы онлайн 24/7. Напишите нам, и мы решим любой вопрос.</p>
+            <button class="cta-button" style="background: #ff416c; box-shadow: 0 0 20px rgba(255, 65, 108, 0.5);" onclick="alert('Переход к чату поддержки...')">
+                НАПИСАТЬ В ЧАТ
+            </button>
+            <a href="#" class="back-link" onclick="navigateTo('home'); return false;">← На главную</a>
+        </div>
+    </div>
 
     <script>
-        // 1. Инициализация Telegram WebApp
+        // Initialize Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
         
-        // Применяем тему пользователя, если она отличается от нашей дефолтной
-        if (tg.themeParams) {
-            if(tg.themeParams.bg_color) document.documentElement.style.setProperty('--tg-bg', tg.themeParams.bg_color);
-            if(tg.themeParams.secondary_bg_color) document.documentElement.style.setProperty('--tg-card', tg.themeParams.secondary_bg_color);
-            if(tg.themeParams.text_color) document.documentElement.style.setProperty('--tg-text', tg.themeParams.text_color);
-            if(tg.themeParams.hint_color) document.documentElement.style.setProperty('--tg-hint', tg.themeParams.hint_color);
-            if(tg.themeParams.button_color) document.documentElement.style.setProperty('--tg-accent', tg.themeParams.button_color);
+        // Apply Theme Colors if available
+        if(tg.themeParams) {
+            // Optional: Override CSS variables based on TG theme if needed, 
+            // but we kept custom purple theme as requested.
         }
 
-        // 2. Логика приложения
-        const COMMISSION_RATE = 0.05;
-        const MIN_AMOUNT = 5;
-        const MAX_AMOUNT = 500;
-
-        let state = {
-            login: '',
-            amount: 10,
-            finalPrice: 10.50
-        };
-
-        // DOM Elements
-        const screens = {
-            home: document.getElementById('homeScreen'),
-            confirm: document.getElementById('confirmScreen'),
-            processing: document.getElementById('processingScreen'),
-            success: document.getElementById('successScreen')
-        };
-        const backBtn = document.getElementById('backBtn');
-        const inputs = {
-            login: document.getElementById('steamLogin'),
-            amount: document.getElementById('amountInput')
-        };
-        const displays = {
-            commission: document.getElementById('commissionVal'),
-            total: document.getElementById('totalVal'),
-            login: document.getElementById('displayLogin'),
-            balance: document.getElementById('displayBalance'),
-            payTotal: document.getElementById('displayTotal'),
-            payBtn: document.getElementById('payBtnText'),
-            code: document.getElementById('generatedCode')
-        };
-        const chips = document.querySelectorAll('.chip');
-
-        // Функция обновления цен
-        function updatePrices() {
-            let amt = parseFloat(inputs.amount.value);
-            if (isNaN(amt)) amt = 0;
-            if (amt > MAX_AMOUNT) amt = MAX_AMOUNT;
-            if (amt < 0) amt = 0;
-            
-            // Синхронизируем инпут
-            inputs.amount.value = amt;
-
-            const comm = amt * COMMISSION_RATE;
-            const total = amt + comm;
-
-            state.amount = amt;
-            state.finalPrice = total;
-
-            displays.commission.textContent = `$${comm.toFixed(2)}`;
-            displays.total.textContent = `$${total.toFixed(2)}`;
-            
-            // Обновляем подсветку чипов
-            chips.forEach(chip => {
-                if (parseFloat(chip.dataset.val) === amt) {
-                    chip.classList.add('active');
-                } else {
-                    chip.classList.remove('active');
-                }
-            });
+        // Navigation Logic
+        function navigateTo(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // Show target page
+            document.getElementById(pageId + 'Page').classList.add('active');
+            // Close menu if open
+            closeMenu();
+            // Scroll to top
+            window.scrollTo(0, 0);
         }
 
-        // Слушатели событий
-        inputs.amount.addEventListener('input', updatePrices);
-        
-        chips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                inputs.amount.value = chip.dataset.val;
-                updatePrices();
-            });
+        function scrollToReviews() {
+            navigateTo('home');
+            setTimeout(() => {
+                document.getElementById('reviewsSection').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+            closeMenu();
+        }
+
+        function openSupport() {
+            navigateTo('support');
+        }
+
+        // Menu Toggle
+        function toggleMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('active');
+        }
+
+        function closeMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.remove('active');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('dropdownMenu');
+            const btn = document.querySelector('.menu-btn');
+            if (!menu.contains(event.target) && !btn.contains(event.target)) {
+                closeMenu();
+            }
         });
 
-        // Навигация
-        function switchScreen(screenName) {
-            Object.values(screens).forEach(s => s.classList.remove('active'));
-            screens[screenName].classList.add('active');
+        // FAQ Accordion
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            // Close others (optional)
+            // document.querySelectorAll('.faq-item').forEach(i => {
+            //     if(i !== item) i.classList.remove('active');
+            // });
+            item.classList.toggle('active');
+        }
+
+        // Top Up Logic
+        let currentAmount = 10;
+        const commissionRate = 0.05;
+
+        function selectAmount(chipEl, val) {
+            // Remove selection from all chips
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            // Add to clicked
+            chipEl.classList.add('selected');
             
-            // Управление кнопкой назад
-            if (screenName === 'home') {
-                backBtn.classList.add('hidden');
-            } else {
-                backBtn.classList.remove('hidden');
+            currentAmount = val;
+            document.getElementById('customAmountInput').value = ''; // Clear manual input
+            updatePriceDisplay();
+        }
+
+        function clearChipsSelection() {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            const val = parseFloat(document.getElementById('customAmountInput').value);
+            if(!isNaN(val)) {
+                currentAmount = val;
+                updatePriceDisplay();
             }
         }
 
-        backBtn.addEventListener('click', () => {
-            const current = document.querySelector('.screen.active').id;
-            if (current === 'confirmScreen') switchScreen('home');
-            else if (current === 'successScreen') resetApp();
-        });
+        function updatePriceDisplay() {
+            const comm = currentAmount * commissionRate;
+            const total = currentAmount + comm;
+            
+            document.getElementById('commissionDisplay').textContent = `$${comm.toFixed(2)}`;
+            document.getElementById('totalDisplay').textContent = `$${total.toFixed(2)}`;
+        }
 
-        function goToConfirm() {
-            const login = inputs.login.value.trim();
-            if (!login) {
-                tg.showAlert("Введите логин Steam");
+        function processPayment() {
+            const login = document.getElementById('steamLoginInput').value.trim();
+            if(!login) {
+                tg.showAlert("Введите логин Steam!");
                 return;
             }
-            if (state.amount < MIN_AMOUNT || state.amount > MAX_AMOUNT) {
-                tg.showAlert(`Сумма должна быть от $${MIN_AMOUNT} до $${MAX_AMOUNT}`);
+            if(currentAmount <= 0) {
+                tg.showAlert("Введите корректную сумму!");
                 return;
             }
 
-            state.login = login;
-            displays.login.textContent = login;
-            displays.balance.textContent = `$${state.amount.toFixed(2)}`;
-            displays.payTotal.textContent = `$${state.finalPrice.toFixed(2)}`;
-            displays.payBtn.textContent = `$${state.finalPrice.toFixed(2)}`;
+            // Simulate loading
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "ОБРАБОТКА...";
+            btn.disabled = true;
 
-            switchScreen('confirm');
-        }
-
-        async function processPayment() {
-            switchScreen('processing');
-            
-            // Имитация запроса к серверу
-            await new Promise(r => setTimeout(r, 2000));
-            
-            // Генерация кода
-            const code = generateCode();
-            displays.code.textContent = code;
-            
-            // Вибрация успеха
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            
-            switchScreen('success');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                
+                // Generate Fake Code
+                const code = generateCode();
+                tg.showPopup({
+                    title: "Успешно!",
+                    message: `Ваш код: ${code}`,
+                    buttons: [{type: "ok"}]
+                });
+                
+                // In real app, you would redirect to success screen here
+                navigateTo('home');
+            }, 2000);
         }
 
         function generateCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let res = '';
-            for(let i=0; i<25; i++) {
-                if(i>0 && i%5===0) res += '-';
-                res += chars.charAt(Math.floor(Math.random()*chars.length));
+            let result = '';
+            for (let i = 0; i < 25; i++) {
+                if (i > 0 && i % 5 === 0) result += '-';
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            return res;
+            return result;
         }
 
-        function copyCode(el) {
-            navigator.clipboard.writeText(displays.code.textContent).then(() => {
-                el.classList.add('copied');
-                setTimeout(() => el.classList.remove('copied'), 2000);
-                if(tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-            });
-        }
-
-        function openSteamSite() {
-            window.open('https://store.steampowered.com/account/registerkey', '_blank');
-        }
-
-        function showHome() {
-            switchScreen('home');
-        }
-
-        function resetApp() {
-            inputs.login.value = '';
-            inputs.amount.value = 10;
-            updatePrices();
-            switchScreen('home');
-        }
-
-        // Инициальный вызов
-        updatePrices();
+        // Init price
+        updatePriceDisplay();
 
     </script>
 </body>
-                    </html>
+</html>
