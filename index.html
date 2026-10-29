@@ -125,48 +125,62 @@
         }
         .hero p { color: var(--text-muted); font-size: 15px; margin-bottom: 50px; max-width: 300px; }
 
-        /* --- НОВАЯ КНОПКА-КАРТИНКА --- */
-        .img-btn {
-            width: 280px;          /* Ширина кнопки, можно менять */
-            max-width: 80vw;       /* Адаптивность под телефон */
-            height: auto;
-            cursor: pointer;
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
-            transition: transform 0.1s ease, filter 0.1s ease;
-            -webkit-user-drag: none;
-            user-select: none;
-            display: block;        /* Чтобы была по центру */
-            margin: 0 auto;        /* Центрирование */
+        /* --- КОНТЕЙНЕР КНОПКИ (Умный микс картинка/CSS) --- */
+        .btn-container {
+            position: relative;
+            display: inline-block;
+            width: 280px;
+            max-width: 80vw;
+            height: 60px; /* Примерная высота для позиционирования картинки */
         }
 
-        .img-btn:hover {
-            filter: drop-shadow(0 0 25px rgba(255,255,255,0.4)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
-            transform: scale(1.02); /* Легкое увеличение при наведении */
-        }
-
-        .img-btn:active {
-            transform: scale(0.95); /* Эффект нажатия */
-            filter: brightness(0.8); /* Затемнение при клике */
-        }
-
-        /* Старая CSS-кнопка как запасной вариант (скрыта по умолчанию) */
-        .melt-btn {
+        /* 1. Базовая CSS-кнопка (видна, если картинки нет) */
+        .base-btn {
+            width: 100%;
+            height: 100%;
             font-family: 'Unbounded', sans-serif;
             font-size: 16px; font-weight: 700; letter-spacing: 2px;
             color: #fff;
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
             background: linear-gradient(180deg, #d6d6d6 0%, #8c8c8c 35%, #4a4a4a 55%, #9e9e9e 100%);
             border: none;
-            padding: 18px 50px;
-            cursor: pointer;
             clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px));
             box-shadow: 0 0 18px rgba(255,255,255,0.12), 0 8px 24px rgba(0,0,0,0.7);
-            position: relative;
-            z-index: 2;
+            cursor: pointer;
             transition: transform 0.1s;
+            position: relative;
+            z-index: 1;
         }
-        .melt-btn:active { transform: scale(0.95); }
-        .btn-full { width: 100%; }
+        .base-btn:active { transform: scale(0.95); }
+
+        /* 2. Твоя картинка btn.png (лежит сверху) */
+        .img-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: contain;
+            z-index: 2;
+            cursor: pointer;
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
+            transition: transform 0.1s, filter 0.1s;
+        }
+        .img-overlay:hover {
+            filter: drop-shadow(0 0 25px rgba(255,255,255,0.4)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
+            transform: scale(1.02);
+        }
+        .img-overlay:active {
+            transform: scale(0.95);
+            filter: brightness(0.8);
+        }
+
+        /* Прозрачный слой для клика (гарантирует работу onclick даже если картинка прозрачная внутри) */
+        .click-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 3;
+            cursor: pointer;
+        }
 
         .scroll-hint {
             margin-top: 60px;
@@ -293,16 +307,18 @@
 </head>
 <body>
 
+    <!-- ФОНОВАЯ ЗВЕЗДА -->
     <div class="bg-star"><img src="logo.png" alt="" onerror="this.style.display='none'"></div>
 
     <header>
-        <!-- Клик по бренду = на главную -->
+        <!-- Кликабельный бренд: Звезда + Крест + Текст -->
         <div class="brand-area" onclick="navigateTo('home')">
             <img src="logo.png" class="brand-logo" alt="" onerror="this.style.display='none'">
-            <!-- Крест вместо буквы T -->
             <span class="brand-name chrome-text"><img class="t-cross" src="cross.png" onerror="this.outerHTML='T'">OP-UP</span>
         </div>
+        
         <button class="menu-btn" onclick="toggleMenu()">⋮</button>
+        
         <div class="dropdown-menu" id="dropdownMenu">
             <button class="menu-item" onclick="navigateTo('topup')">
                 <svg class="menu-icon" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -329,13 +345,18 @@
             <h1 class="chrome-text">Пополняй Steam<br>без правил</h1>
             <p>Быстро. Анонимно. По-своему. Баланс падает на твой аккаунт за минуты.</p>
 
-            <!-- НОВАЯ КНОПКА-КАРТИНКА -->
-            <img src="btn.png" class="img-btn" alt="Пополнить" 
-                 onclick="navigateTo('topup')" 
-                 onerror="this.style.display='none'; document.getElementById('fallbackBtn').style.display='inline-block'">
-            
-            <!-- Запасная кнопка (показывается только если btn.png не найден) -->
-            <button id="fallbackBtn" class="melt-btn" style="display:none;" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
+            <!-- УМНАЯ КНОПКА -->
+            <div class="btn-container">
+                <!-- База: CSS кнопка с шипами (видна, если btn.png нет) -->
+                <button class="base-btn" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
+                
+                <!-- Оверлей: Твоя картинка btn.png (перекрывает базу, если существует) -->
+                <img src="btn.png" class="img-overlay" alt="" 
+                     onerror="this.style.display='none'">
+                     
+                <!-- Слой клика: Гарантирует, что клик проходит сквозь прозрачные части картинки -->
+                <div class="click-layer" onclick="navigateTo('topup')"></div>
+            </div>
 
             <div class="scroll-hint">▼ листай вниз ▼</div>
         </div>
@@ -375,7 +396,7 @@
             <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
             <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
 
-            <button class="melt-btn btn-full" onclick="processPayment(event)">ОПЛАТИТЬ</button>
+            <button class="base-btn btn-full" style="height: 50px;" onclick="processPayment(event)">ОПЛАТИТЬ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← назад</a>
@@ -413,7 +434,7 @@
             <h2 class="form-title chrome-text">Поддержка</h2>
             <p style="color: var(--text-muted); margin: 20px 0 30px; font-size: 14px;">Онлайн 24/7. Пиши — разрулим любой вопрос.</p>
 
-            <button class="melt-btn btn-full" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
+            <button class="base-btn btn-full" style="height: 50px;" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a>
