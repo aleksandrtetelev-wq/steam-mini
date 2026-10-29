@@ -316,7 +316,7 @@
             padding: 0 18px; color: var(--text-muted); font-size: 13px; line-height: 1.6;
         }
         .faq-item.active .faq-arrow { transform: rotate(180deg); }
-        .faq-item.active .faq-answer { max-height: 220px; padding: 0 18px 18px; }
+        .faq-item.active .faq-answer { max-height: 300px; padding: 0 18px 18px; } /* Увеличил высоту для длинного текста */
 
         .page-title {
             font-family: 'Unbounded', sans-serif;
@@ -410,7 +410,7 @@
             <h2 class="form-title chrome-text">Пополнение</h2>
 
             <label class="input-label">Логин Steam</label>
-            <input type="text" class="custom-input" id="steamLoginInput" placeholder="логин">
+            <input type="text" class="custom-input" id="steamLoginInput" placeholder="Введите логин аккаунта">
 
             <label class="input-label">Сумма (₽)</label>
             <div class="amount-chips">
@@ -419,7 +419,7 @@
                 <div class="chip" onclick="selectAmount(this, 1000)">1000 ₽</div>
                 <div class="chip" onclick="selectAmount(this, 2000)">2000 ₽</div>
             </div>
-            <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" min="50" step="1" oninput="validateAndClearChips()">
+            <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" step="1" oninput="clearChipsSelection()">
 
             <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">15 ₽</span></div>
             <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">515 ₽</span></div>
@@ -437,11 +437,17 @@
     <div id="faqPage" class="page">
         <h2 class="page-title chrome-text">FAQ</h2>
         <div class="faq-list">
-            <!-- НОВЫЙ ВОПРОС ПРО ЛОГИН -->
+            <!-- ИСПРАВЛЕННЫЙ ВОПРОС ПРО ЛОГИН -->
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">Что такое логин Steam? <span class="faq-arrow">▼</span></div>
+                <div class="faq-question" onclick="toggleFaq(this)">Где взять мой логин Steam? <span class="faq-arrow">▼</span></div>
                 <div class="faq-answer">
-                    Это ваш уникальный никнейм в игре. Он виден в профиле Steam или в клиенте игры. Пример: <b>Gamer_Pro_2024</b>. Не путайте с почтой или паролем — нам нужен только ник.
+                    Это <b>не</b> тот никнейм, который видят друзья! <br><br>
+                    <b>Как найти правильный логин:</b><br>
+                    1. Откройте приложение Steam.<br>
+                    2. Нажмите на свой профиль (вверху справа).<br>
+                    3. Выберите пункт «Аккаунт».<br>
+                    4. Там будет строка <b>«Имя аккаунта»</b>. Вот его и нужно вводить!<br><br>
+                    <i>Пример: если ваш ник — "ProGamer", а логин — "user123", вводите именно "user123".</i>
                 </div>
             </div>
             
@@ -451,7 +457,7 @@
             </div>
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">Это безопасно для аккаунта? <span class="faq-arrow">▼</span></div>
-                <div class="faq-answer">Да. Нам нужен только твой никнейм. Пароль и доступ к аккаунту мы никогда не запрашиваем.</div>
+                <div class="faq-answer">Да. Нам нужен только твой логин. Пароль и доступ к аккаунту мы никогда не запрашиваем.</div>
             </div>
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">Чем можно оплатить? <span class="faq-arrow">▼</span></div>
@@ -511,7 +517,7 @@
 
         function toggleFaq(el) { el.parentElement.classList.toggle('active'); }
 
-        let currentAmount = 500; // Дефолт изменил на 500
+        let currentAmount = 500; // Дефолт 500
         const commissionRate = 0.03;
         const MIN_AMOUNT = 50;
 
@@ -523,26 +529,20 @@
             updatePriceDisplay();
         }
 
-        function validateAndClearChips() {
+        function clearChipsSelection() {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-            let val = parseFloat(document.getElementById('customAmountInput').value);
-            
-            if (isNaN(val) || val < MIN_AMOUNT) {
-                // Если ввели меньше 50 или мусор — очищаем или ставим минимум
-                if (val !== "" && val < MIN_AMOUNT) {
-                     document.getElementById('customAmountInput').value = "";
-                     alert("Минимальная сумма пополнения: 50 ₽");
-                     return;
-                }
-                currentAmount = 0;
+            const val = parseFloat(document.getElementById('customAmountInput').value);
+            if (!isNaN(val)) { 
+                currentAmount = val; 
+                updatePriceDisplay(); 
             } else {
-                currentAmount = val;
+                currentAmount = 0;
+                updatePriceDisplay();
             }
-            updatePriceDisplay();
         }
 
         function updatePriceDisplay() {
-            if (currentAmount <= 0) {
+            if (currentAmount <= 0 || isNaN(currentAmount)) {
                 document.getElementById('commissionDisplay').textContent = "—";
                 document.getElementById('totalDisplay').textContent = "—";
                 return;
@@ -555,11 +555,16 @@
 
         function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
-            if (!login) { tg.showAlert('Введи логин Steam!'); return; }
             
-            // Проверка на минимальную сумму перед оплатой
-            if (currentAmount < MIN_AMOUNT) { 
-                tg.showAlert(`Минимальная сумма: ${MIN_AMOUNT} ₽`); 
+            // Проверка логина
+            if (!login) { 
+                tg.showAlert('Введи логин Steam!'); 
+                return; 
+            }
+            
+            // ПРОВЕРКА СУММЫ ПРИ НАЖАТИИ КНОПКИ
+            if (isNaN(currentAmount) || currentAmount < MIN_AMOUNT) { 
+                tg.showAlert(`Минимальная сумма пополнения: ${MIN_AMOUNT} ₽`); 
                 return; 
             }
 
