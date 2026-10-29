@@ -37,13 +37,11 @@
             opacity: 0.15;
             pointer-events: none;
             filter: grayscale(100%) contrast(1.2);
-            /* Анимация rotateSlow удалена */
         }
         .bg-star img { 
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-            /* animation: rotateSlow 60s linear infinite; <-- УДАЛЕНО */
         }
 
         /* --- ХРОМ-ТЕКСТ --- */
@@ -70,29 +68,26 @@
         .brand-area { 
             display: flex; 
             align-items: center; 
-            gap: 8px; /* Немного меньше отступ */
+            gap: 6px; 
             cursor: pointer; 
         }
         
-        /* Логотип звезды убран из шапки */
-        .brand-logo { display: none; } 
-
         .brand-name { 
             font-family: 'Unbounded', sans-serif; 
             font-weight: 900; 
-            font-size: 18px; /* Чуть крупнее без иконки слева */
+            font-size: 18px; 
             letter-spacing: 2px; 
             display: flex;
             align-items: center;
         }
 
-        /* Крест вместо буквы T */
+        /* КРЕСТ В НАЗВАНИИ (УВЕЛИЧЕННЫЙ) */
         .t-cross {
-            height: 22px;
+            height: 24px; /* Стало больше */
             width: auto;
             vertical-align: middle;
             margin-right: 2px;
-            filter: drop-shadow(0 0 5px rgba(255,255,255,0.35));
+            filter: drop-shadow(0 0 6px rgba(255,255,255,0.4));
         }
 
         .menu-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 5px; }
@@ -145,12 +140,13 @@
         }
         .hero p { color: var(--text-muted); font-size: 15px; margin-bottom: 50px; max-width: 300px; }
 
-        /* --- НОВАЯ КНОПКА (ТОЛЬКО КАРТИНКА) --- */
+        /* --- КНОПКА С ТЕКСТОМ ПОВЕРХ КАРТИНКИ --- */
         .img-btn-container {
             position: relative;
             display: inline-block;
-            width: 280px; /* Ширина кнопки */
+            width: 280px; 
             max-width: 80vw;
+            height: 70px; /* Высота контейнера под картинку */
             cursor: pointer;
             transition: transform 0.1s;
         }
@@ -158,12 +154,27 @@
 
         .img-btn {
             width: 100%;
-            height: auto;
-            display: block;
+            height: 100%;
+            object-fit: cover; /* Чтобы картинка заполнила область */
             filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
+            display: block;
         }
         
-        /* Прозрачный слой для клика, чтобы гарантировать работу onclick */
+        /* ТЕКСТ НА КНОПКЕ */
+        .btn-text-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Unbounded', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            z-index: 2;
+            pointer-events: none; /* Чтобы клик проходил сквозь текст */
+        }
+
         .click-target {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -256,6 +267,27 @@
         .price-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
         .price-total { display: flex; justify-content: space-between; font-size: 20px; font-weight: 800; margin: 20px 0 30px; padding-top: 15px; border-top: 1px solid var(--border); }
 
+        /* БОЛЬШАЯ КНОПКА ОПЛАТЫ */
+        .big-pay-btn {
+            width: 100%;
+            height: 60px; /* Крупнее */
+            font-family: 'Unbounded', sans-serif;
+            font-size: 18px; font-weight: 700; letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            background: linear-gradient(180deg, #d6d6d6 0%, #8c8c8c 35%, #4a4a4a 55%, #9e9e9e 100%);
+            border: none;
+            clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px));
+            box-shadow: 0 0 20px rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .big-pay-btn:hover {
+            box-shadow: 0 0 30px rgba(255,255,255,0.3), 0 8px 24px rgba(0,0,0,0.7);
+            transform: translateY(-2px);
+        }
+        .big-pay-btn:active { transform: scale(0.98); }
+
         .back-link {
             display: inline-block; margin-top: 20px;
             color: var(--text-muted); font-size: 12px;
@@ -295,11 +327,11 @@
 </head>
 <body>
 
-    <!-- ФОНОВАЯ ЗВЕЗДА (СТАТИЧНАЯ) -->
+    <!-- ФОНОВАЯ ЗВЕЗДА -->
     <div class="bg-star"><img src="logo.png" alt="" onerror="this.style.display='none'"></div>
 
     <header>
-        <!-- БРЕНД: Только Крест + Текст (без звезды слева) -->
+        <!-- БРЕНД: Крест + Текст -->
         <div class="brand-area" onclick="navigateTo('home')">
             <span class="brand-name chrome-text">
                 <img class="t-cross" src="cross.png" onerror="this.outerHTML='T'">OP-UP
@@ -334,9 +366,10 @@
             <h1 class="chrome-text">Пополняй Steam<br>без правил</h1>
             <p>Быстро. Анонимно. По-своему. Баланс падает на твой аккаунт за минуты.</p>
 
-            <!-- КНОПКА: ТОЛЬКО КАРТИНКА btn.png -->
+            <!-- КНОПКА: Картинка + Текст поверх -->
             <div class="img-btn-container" onclick="navigateTo('topup')">
-                <img src="btn.png" class="img-btn" alt="Пополнить" onerror="this.style.display='none'">
+                <img src="btn.png" class="img-btn" alt="" onerror="this.style.opacity='0.2'">
+                <div class="btn-text-overlay">ПОПОЛНИТЬ</div>
                 <div class="click-target"></div>
             </div>
 
@@ -378,7 +411,8 @@
             <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
             <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
 
-            <button class="base-btn btn-full" style="height: 50px;" onclick="processPayment(event)">ОПЛАТИТЬ</button>
+            <!-- БОЛЬШАЯ КНОПКА ОПЛАТЫ -->
+            <button class="big-pay-btn" onclick="processPayment(event)">ОПЛАТИТЬ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← назад</a>
@@ -416,7 +450,7 @@
             <h2 class="form-title chrome-text">Поддержка</h2>
             <p style="color: var(--text-muted); margin: 20px 0 30px; font-size: 14px;">Онлайн 24/7. Пиши — разрулим любой вопрос.</p>
 
-            <button class="base-btn btn-full" style="height: 50px;" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
+            <button class="big-pay-btn" style="height: 50px;" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a>
