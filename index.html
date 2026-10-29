@@ -14,6 +14,9 @@
             --text-muted: #666666;
             --card-bg: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.1);
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -316,13 +319,137 @@
             padding: 0 18px; color: var(--text-muted); font-size: 13px; line-height: 1.6;
         }
         .faq-item.active .faq-arrow { transform: rotate(180deg); }
-        .faq-item.active .faq-answer { max-height: 300px; padding: 0 18px 18px; } /* Увеличил высоту для длинного текста */
+        .faq-item.active .faq-answer { max-height: 300px; padding: 0 18px 18px; }
 
         .page-title {
             font-family: 'Unbounded', sans-serif;
             text-align: center; font-size: 24px;
             text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px;
         }
+
+        /* --- ПРОФИЛЬ PAGE STYLES --- */
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .avatar-wrapper {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            border: 2px solid var(--chrome-mid);
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+            background: #222; /* Fallback if no photo */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .username {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .user-id {
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+        .stat-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 12px 8px;
+            text-align: center;
+            clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+        }
+        .stat-val {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .history-section {
+            padding: 0 20px;
+        }
+        .history-title {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: var(--chrome-mid);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .order-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin-bottom: 12px;
+            clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .order-login {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .order-date {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .order-status {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-completed { background: rgba(46, 204, 113, 0.15); color: var(--success); border: 1px solid rgba(46, 204, 113, 0.3); }
+        .status-pending { background: rgba(241, 196, 15, 0.15); color: var(--warning); border: 1px solid rgba(241, 196, 15, 0.3); }
+        .status-cancelled { background: rgba(231, 76, 60, 0.15); color: var(--danger); border: 1px solid rgba(231, 76, 60, 0.3); }
+
+        .empty-history {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px dashed var(--border);
+            clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+        }
+
     </style>
 </head>
 <body>
@@ -344,6 +471,10 @@
             <button class="menu-item" onclick="navigateTo('topup')">
                 <svg class="menu-icon" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 Пополнить
+            </button>
+            <button class="menu-item" onclick="navigateTo('profile')">
+                <svg class="menu-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                Профиль
             </button>
             <button class="menu-item" onclick="scrollToReviews()">
                 <svg class="menu-icon" viewBox="0 0 24 24"><path d="M12 2l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9z"/></svg>
@@ -433,6 +564,44 @@
         </div>
     </div>
 
+    <!-- ПРОФИЛЬ -->
+    <div id="profilePage" class="page">
+        <div class="profile-header">
+            <div class="avatar-wrapper">
+                <img id="userAvatar" class="avatar-img" src="" alt="">
+            </div>
+            <div class="username" id="userName">Загрузка...</div>
+            <div class="user-id" id="userId">#ID: ...</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <span class="stat-val" id="statOrders">0</span>
+                <span class="stat-label">Заказы</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="statSum">0 ₽</span>
+                <span class="stat-label">Сумма</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" style="color: var(--success);" id="statSuccess">0%</span>
+                <span class="stat-label">Успех</span>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">История операций</div>
+            <div id="ordersList">
+                <!-- Сюда JS добавит карточки -->
+                <div class="empty-history">Пока нет активных заказов.<br>Сделайте первое пополнение!</div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top: 30px;">
+            <a class="back-link" onclick="navigateTo('home'); return false;">← На главную</a>
+        </div>
+    </div>
+
     <!-- FAQ -->
     <div id="faqPage" class="page">
         <h2 class="page-title chrome-text">FAQ</h2>
@@ -492,11 +661,37 @@
         tg.expand();
         if (tg.setHeaderColor) tg.setHeaderColor('#050505');
 
+        // --- GLOBAL STATE FOR ORDERS (SIMULATION) ---
+        let orders = [];
+        
+        // Load saved orders from LocalStorage on start
+        function loadOrders() {
+            const saved = localStorage.getItem('steam_topup_orders');
+            if (saved) {
+                orders = JSON.parse(saved);
+            } else {
+                // Default demo data if empty
+                orders = [
+                    { id: 101, login: 'DemoUser', amount: 500, status: 'completed', date: new Date(Date.now() - 86400000).toLocaleDateString() },
+                    { id: 102, login: 'TestAcc', amount: 1000, status: 'pending', date: new Date().toLocaleDateString() }
+                ];
+            }
+        }
+
+        function saveOrders() {
+            localStorage.setItem('steam_topup_orders', JSON.stringify(orders));
+        }
+
+        // --- NAVIGATION LOGIC ---
         function navigateTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId + 'Page').classList.add('active');
             closeMenu();
             window.scrollTo(0, 0);
+
+            if (pageId === 'profile') {
+                renderProfile();
+            }
         }
 
         function scrollToReviews() {
@@ -517,6 +712,80 @@
 
         function toggleFaq(el) { el.parentElement.classList.toggle('active'); }
 
+        // --- PROFILE RENDERING ---
+        function renderProfile() {
+            // 1. User Data
+            const user = tg.initDataUnsafe?.user || {};
+            const firstName = user.first_name || 'Гость';
+            const lastName = user.last_name ? ' ' + user.last_name : '';
+            const username = user.username ? '@' + user.username : '';
+            const userId = user.id || '???';
+            const photoUrl = user.photo_url || '';
+
+            document.getElementById('userName').textContent = firstName + lastName;
+            document.getElementById('userId').textContent = '#ID: ' + userId + (username ? ' (' + username + ')' : '');
+            
+            const avatarImg = document.getElementById('userAvatar');
+            if (photoUrl) {
+                avatarImg.src = photoUrl;
+                avatarImg.onerror = () => { avatarImg.style.display = 'none'; }; // Hide if broken link
+            } else {
+                // Placeholder gradient if no photo
+                avatarImg.style.background = 'linear-gradient(135deg, #9d4edd, #2aabee)';
+                avatarImg.src = ''; 
+            }
+
+            // 2. Stats Calculation
+            const totalOrders = orders.length;
+            const completedOrders = orders.filter(o => o.status === 'completed').length;
+            const totalSum = orders.reduce((acc, curr) => acc + curr.amount, 0);
+            const successRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
+
+            document.getElementById('statOrders').textContent = totalOrders;
+            document.getElementById('statSum').textContent = totalSum.toLocaleString() + ' ₽';
+            document.getElementById('statSuccess').textContent = successRate + '%';
+
+            // 3. History List
+            const listContainer = document.getElementById('ordersList');
+            listContainer.innerHTML = '';
+
+            if (orders.length === 0) {
+                listContainer.innerHTML = '<div class="empty-history">Нет истории заказов.</div>';
+                return;
+            }
+
+            // Sort by newest first
+            const sortedOrders = [...orders].sort((a, b) => b.id - a.id);
+
+            sortedOrders.forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                
+                let statusClass = '';
+                let statusText = '';
+                if (order.status === 'completed') {
+                    statusClass = 'status-completed';
+                    statusText = 'Выполнен';
+                } else if (order.status === 'pending') {
+                    statusClass = 'status-pending';
+                    statusText = 'В работе';
+                } else {
+                    statusClass = 'status-cancelled';
+                    statusText = 'Отменен';
+                }
+
+                card.innerHTML = `
+                    <div class="order-info">
+                        <span class="order-login">${order.login}</span>
+                        <span class="order-date">${order.date} • ${order.amount} ₽</span>
+                    </div>
+                    <span class="order-status ${statusClass}">${statusText}</span>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        // --- TOP UP LOGIC ---
         let currentAmount = 500; // Дефолт 500
         const commissionRate = 0.03;
         const MIN_AMOUNT = 50;
@@ -576,17 +845,36 @@
             setTimeout(() => {
                 btn.innerText = original;
                 btn.disabled = false;
+                
+                // CREATE NEW ORDER OBJECT
+                const newOrder = {
+                    id: Date.now(), // Unique ID based on timestamp
+                    login: login,
+                    amount: Math.round(currentAmount),
+                    status: 'pending', // Starts as pending
+                    date: new Date().toLocaleDateString()
+                };
+                
+                // Add to array and save
+                orders.unshift(newOrder); // Add to beginning
+                saveOrders();
+
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                
                 tg.showPopup({
                     title: 'Готово',
-                    message: Math.round(currentAmount) + ' ₽ упадут на баланс ' + login + ' в течение нескольких минут.',
+                    message: `Заказ №${newOrder.id.toString().slice(-4)} создан.\n${Math.round(currentAmount)} ₽ упадут на баланс ${login}.`,
                     buttons: [{ type: 'ok' }]
                 });
+                
                 navigateTo('home');
             }, 2000);
         }
 
+        // Init
+        loadOrders();
         updatePriceDisplay();
+
     </script>
 </body>
 </html>
