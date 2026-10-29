@@ -81,9 +81,9 @@
             align-items: center;
         }
 
-        /* КРЕСТ В НАЗВАНИИ (УВЕЛИЧЕННЫЙ) */
+        /* КРЕСТ В НАЗВАНИИ */
         .t-cross {
-            height: 24px; /* Стало больше */
+            height: 24px;
             width: auto;
             vertical-align: middle;
             margin-right: 2px;
@@ -140,13 +140,13 @@
         }
         .hero p { color: var(--text-muted); font-size: 15px; margin-bottom: 50px; max-width: 300px; }
 
-        /* --- КНОПКА С ТЕКСТОМ ПОВЕРХ КАРТИНКИ --- */
+        /* --- КНОПКА С ТЕКСТОМ ВНУТРИ --- */
         .img-btn-container {
             position: relative;
             display: inline-block;
             width: 280px; 
             max-width: 80vw;
-            height: 70px; /* Высота контейнера под картинку */
+            height: 70px; 
             cursor: pointer;
             transition: transform 0.1s;
         }
@@ -155,24 +155,24 @@
         .img-btn {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Чтобы картинка заполнила область */
+            object-fit: cover; 
             filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
             display: block;
         }
         
-        /* ТЕКСТ НА КНОПКЕ */
         .btn-text-overlay {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Unbounded', sans-serif;
-            font-size: 18px;
+            font-size: 16px; 
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             color: #fff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9); 
             z-index: 2;
-            pointer-events: none; /* Чтобы клик проходил сквозь текст */
+            pointer-events: none;
+            white-space: nowrap; 
         }
 
         .click-target {
@@ -205,7 +205,7 @@
             border-bottom: 1px solid var(--border);
             background: rgba(255,255,255,0.02);
         }
-        .marquee-track { display: flex; gap: 16px; width: fit-content; animation: scrollLeft 25s linear infinite; }
+        .marquee-track { display: flex; gap: 16px; width: fit-content; animation: scrollLeft 30s linear infinite; }
         @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
         .review-card {
@@ -270,7 +270,7 @@
         /* БОЛЬШАЯ КНОПКА ОПЛАТЫ */
         .big-pay-btn {
             width: 100%;
-            height: 60px; /* Крупнее */
+            height: 60px;
             font-family: 'Unbounded', sans-serif;
             font-size: 18px; font-weight: 700; letter-spacing: 2px;
             color: #fff;
@@ -380,12 +380,25 @@
             <div class="reviews-title">Отзывы своих</div>
             <div class="reviews-container">
                 <div class="marquee-track">
-                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@alex_gmrr</span><span class="review-text">Баланс упал за 2 минуты, огонь</span></div>
-                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kvnt99</span><span class="review-text">Лучший курс рубля, беру постоянно</span></div>
-                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xx</span><span class="review-text">Поддержка ответила ночью, респект</span></div>
-                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@alex_gmrr</span><span class="review-text">Баланс упал за 2 минуты, огонь</span></div>
-                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kvnt99</span><span class="review-text">Лучший курс рубля, беру постоянно</span></div>
-                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xx</span><span class="review-text">Поддержка ответила ночью, респект</span></div>
+                    <!-- Реалистичные отзывы -->
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kate_gaming</span><span class="review-text">Пришло за минуту, топ!</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Dmitry_Volkov_99</span><span class="review-text">Наконец-то нормальный курс без обмана.</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xd_pro</span><span class="review-text">Поддержка помогла разобраться с логином.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Alice_In_Wonderland</span><span class="review-text">Удобно, что не надо искать ключи.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Maxim_Kravchenko</span><span class="review-text">Беру тут уже третий раз, все четко.</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@GamerBoy2005</span><span class="review-text">Немного долго обрабатывали, но деньги пришли.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@elena_sokolova</span><span class="review-text">Супер сервис для доната в CS2.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Ivan_Petrov_123</span><span class="review-text">Лучше чем через другие сайты.</span></div>
+                    
+                    <!-- Дубли для бесшовности -->
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kate_gaming</span><span class="review-text">Пришло за минуту, топ!</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Dmitry_Volkov_99</span><span class="review-text">Наконец-то нормальный курс без обмана.</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xd_pro</span><span class="review-text">Поддержка помогла разобраться с логином.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Alice_In_Wonderland</span><span class="review-text">Удобно, что не надо искать ключи.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Maxim_Kravchenko</span><span class="review-text">Беру тут уже третий раз, все четко.</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@GamerBoy2005</span><span class="review-text">Немного долго обрабатывали, но деньги пришли.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@elena_sokolova</span><span class="review-text">Супер сервис для доната в CS2.</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@Ivan_Petrov_123</span><span class="review-text">Лучше чем через другие сайты.</span></div>
                 </div>
             </div>
         </div>
@@ -397,19 +410,19 @@
             <h2 class="form-title chrome-text">Пополнение</h2>
 
             <label class="input-label">Логин Steam</label>
-            <input type="text" class="custom-input" id="steamLoginInput" placeholder="твой никнейм">
+            <input type="text" class="custom-input" id="steamLoginInput" placeholder="логин">
 
             <label class="input-label">Сумма (₽)</label>
             <div class="amount-chips">
-                <div class="chip" onclick="selectAmount(this, 500)">500 ₽</div>
-                <div class="chip selected" onclick="selectAmount(this, 1000)">1000 ₽</div>
+                <div class="chip" onclick="selectAmount(this, 100)">100 ₽</div>
+                <div class="chip selected" onclick="selectAmount(this, 500)">500 ₽</div>
+                <div class="chip" onclick="selectAmount(this, 1000)">1000 ₽</div>
                 <div class="chip" onclick="selectAmount(this, 2000)">2000 ₽</div>
-                <div class="chip" onclick="selectAmount(this, 5000)">5000 ₽</div>
             </div>
-            <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" oninput="clearChipsSelection()">
+            <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" min="50" step="1" oninput="validateAndClearChips()">
 
-            <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
-            <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
+            <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">15 ₽</span></div>
+            <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">515 ₽</span></div>
 
             <!-- БОЛЬШАЯ КНОПКА ОПЛАТЫ -->
             <button class="big-pay-btn" onclick="processPayment(event)">ОПЛАТИТЬ</button>
@@ -424,6 +437,14 @@
     <div id="faqPage" class="page">
         <h2 class="page-title chrome-text">FAQ</h2>
         <div class="faq-list">
+            <!-- НОВЫЙ ВОПРОС ПРО ЛОГИН -->
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Что такое логин Steam? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">
+                    Это ваш уникальный никнейм в игре. Он виден в профиле Steam или в клиенте игры. Пример: <b>Gamer_Pro_2024</b>. Не путайте с почтой или паролем — нам нужен только ник.
+                </div>
+            </div>
+            
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">Как быстро приходит баланс? <span class="faq-arrow">▼</span></div>
                 <div class="faq-answer">От 1 до 5 минут после оплаты. Зачисление идёт напрямую на кошелёк Steam, без кодов и ключей.</div>
@@ -450,7 +471,8 @@
             <h2 class="form-title chrome-text">Поддержка</h2>
             <p style="color: var(--text-muted); margin: 20px 0 30px; font-size: 14px;">Онлайн 24/7. Пиши — разрулим любой вопрос.</p>
 
-            <button class="big-pay-btn" style="height: 50px;" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
+            <!-- КНОПКА ВЕДЕТ В TELEGRAM @Fayzer1 -->
+            <button class="big-pay-btn" style="height: 50px;" onclick="window.open('https://t.me/Fayzer1', '_blank')">НАПИСАТЬ НАМ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a>
@@ -489,8 +511,9 @@
 
         function toggleFaq(el) { el.parentElement.classList.toggle('active'); }
 
-        let currentAmount = 1000;
+        let currentAmount = 500; // Дефолт изменил на 500
         const commissionRate = 0.03;
+        const MIN_AMOUNT = 50;
 
         function selectAmount(chipEl, val) {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
@@ -500,13 +523,30 @@
             updatePriceDisplay();
         }
 
-        function clearChipsSelection() {
+        function validateAndClearChips() {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-            const val = parseFloat(document.getElementById('customAmountInput').value);
-            if (!isNaN(val)) { currentAmount = val; updatePriceDisplay(); }
+            let val = parseFloat(document.getElementById('customAmountInput').value);
+            
+            if (isNaN(val) || val < MIN_AMOUNT) {
+                // Если ввели меньше 50 или мусор — очищаем или ставим минимум
+                if (val !== "" && val < MIN_AMOUNT) {
+                     document.getElementById('customAmountInput').value = "";
+                     alert("Минимальная сумма пополнения: 50 ₽");
+                     return;
+                }
+                currentAmount = 0;
+            } else {
+                currentAmount = val;
+            }
+            updatePriceDisplay();
         }
 
         function updatePriceDisplay() {
+            if (currentAmount <= 0) {
+                document.getElementById('commissionDisplay').textContent = "—";
+                document.getElementById('totalDisplay').textContent = "—";
+                return;
+            }
             const comm = currentAmount * commissionRate;
             const total = currentAmount + comm;
             document.getElementById('commissionDisplay').textContent = Math.round(comm) + ' ₽';
@@ -516,7 +556,12 @@
         function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
             if (!login) { tg.showAlert('Введи логин Steam!'); return; }
-            if (currentAmount <= 0) { tg.showAlert('Введи корректную сумму!'); return; }
+            
+            // Проверка на минимальную сумму перед оплатой
+            if (currentAmount < MIN_AMOUNT) { 
+                tg.showAlert(`Минимальная сумма: ${MIN_AMOUNT} ₽`); 
+                return; 
+            }
 
             const btn = event.target;
             const original = btn.innerText;
