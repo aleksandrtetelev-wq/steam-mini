@@ -27,7 +27,7 @@
             position: relative;
         }
 
-        /* --- ФОНОВАЯ ЗВЕЗДА --- */
+        /* --- ФОНОВАЯ ЗВЕЗДА (СТАТИЧНАЯ) --- */
         .bg-star {
             position: fixed;
             top: 50%; left: 50%;
@@ -37,9 +37,14 @@
             opacity: 0.15;
             pointer-events: none;
             filter: grayscale(100%) contrast(1.2);
+            /* Анимация rotateSlow удалена */
         }
-        .bg-star img { width: 100%; height: 100%; object-fit: contain; animation: rotateSlow 60s linear infinite; }
-        @keyframes rotateSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .bg-star img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            /* animation: rotateSlow 60s linear infinite; <-- УДАЛЕНО */
+        }
 
         /* --- ХРОМ-ТЕКСТ --- */
         .chrome-text {
@@ -62,16 +67,31 @@
             background: linear-gradient(to bottom, rgba(5,5,5,0.9), transparent);
         }
 
-        .brand-area { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .brand-logo { width: 24px; height: 24px; filter: grayscale(100%) brightness(1.5); }
-        .brand-name { font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; }
+        .brand-area { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; /* Немного меньше отступ */
+            cursor: pointer; 
+        }
+        
+        /* Логотип звезды убран из шапки */
+        .brand-logo { display: none; } 
+
+        .brand-name { 
+            font-family: 'Unbounded', sans-serif; 
+            font-weight: 900; 
+            font-size: 18px; /* Чуть крупнее без иконки слева */
+            letter-spacing: 2px; 
+            display: flex;
+            align-items: center;
+        }
 
         /* Крест вместо буквы T */
         .t-cross {
-            height: 20px;
+            height: 22px;
             width: auto;
-            vertical-align: -4px;
-            margin-right: 1px;
+            vertical-align: middle;
+            margin-right: 2px;
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.35));
         }
 
@@ -125,61 +145,29 @@
         }
         .hero p { color: var(--text-muted); font-size: 15px; margin-bottom: 50px; max-width: 300px; }
 
-        /* --- КОНТЕЙНЕР КНОПКИ (Умный микс картинка/CSS) --- */
-        .btn-container {
+        /* --- НОВАЯ КНОПКА (ТОЛЬКО КАРТИНКА) --- */
+        .img-btn-container {
             position: relative;
             display: inline-block;
-            width: 280px;
+            width: 280px; /* Ширина кнопки */
             max-width: 80vw;
-            height: 60px; /* Примерная высота для позиционирования картинки */
-        }
-
-        /* 1. Базовая CSS-кнопка (видна, если картинки нет) */
-        .base-btn {
-            width: 100%;
-            height: 100%;
-            font-family: 'Unbounded', sans-serif;
-            font-size: 16px; font-weight: 700; letter-spacing: 2px;
-            color: #fff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-            background: linear-gradient(180deg, #d6d6d6 0%, #8c8c8c 35%, #4a4a4a 55%, #9e9e9e 100%);
-            border: none;
-            clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px));
-            box-shadow: 0 0 18px rgba(255,255,255,0.12), 0 8px 24px rgba(0,0,0,0.7);
             cursor: pointer;
             transition: transform 0.1s;
-            position: relative;
-            z-index: 1;
         }
-        .base-btn:active { transform: scale(0.95); }
+        .img-btn-container:active { transform: scale(0.95); }
 
-        /* 2. Твоя картинка btn.png (лежит сверху) */
-        .img-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: contain;
-            z-index: 2;
-            cursor: pointer;
+        .img-btn {
+            width: 100%;
+            height: auto;
+            display: block;
             filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
-            transition: transform 0.1s, filter 0.1s;
         }
-        .img-overlay:hover {
-            filter: drop-shadow(0 0 25px rgba(255,255,255,0.4)) drop-shadow(0 8px 20px rgba(0,0,0,0.6));
-            transform: scale(1.02);
-        }
-        .img-overlay:active {
-            transform: scale(0.95);
-            filter: brightness(0.8);
-        }
-
-        /* Прозрачный слой для клика (гарантирует работу onclick даже если картинка прозрачная внутри) */
-        .click-layer {
+        
+        /* Прозрачный слой для клика, чтобы гарантировать работу onclick */
+        .click-target {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 3;
-            cursor: pointer;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
         }
 
         .scroll-hint {
@@ -307,14 +295,15 @@
 </head>
 <body>
 
-    <!-- ФОНОВАЯ ЗВЕЗДА -->
+    <!-- ФОНОВАЯ ЗВЕЗДА (СТАТИЧНАЯ) -->
     <div class="bg-star"><img src="logo.png" alt="" onerror="this.style.display='none'"></div>
 
     <header>
-        <!-- Кликабельный бренд: Звезда + Крест + Текст -->
+        <!-- БРЕНД: Только Крест + Текст (без звезды слева) -->
         <div class="brand-area" onclick="navigateTo('home')">
-            <img src="logo.png" class="brand-logo" alt="" onerror="this.style.display='none'">
-            <span class="brand-name chrome-text"><img class="t-cross" src="cross.png" onerror="this.outerHTML='T'">OP-UP</span>
+            <span class="brand-name chrome-text">
+                <img class="t-cross" src="cross.png" onerror="this.outerHTML='T'">OP-UP
+            </span>
         </div>
         
         <button class="menu-btn" onclick="toggleMenu()">⋮</button>
@@ -345,17 +334,10 @@
             <h1 class="chrome-text">Пополняй Steam<br>без правил</h1>
             <p>Быстро. Анонимно. По-своему. Баланс падает на твой аккаунт за минуты.</p>
 
-            <!-- УМНАЯ КНОПКА -->
-            <div class="btn-container">
-                <!-- База: CSS кнопка с шипами (видна, если btn.png нет) -->
-                <button class="base-btn" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
-                
-                <!-- Оверлей: Твоя картинка btn.png (перекрывает базу, если существует) -->
-                <img src="btn.png" class="img-overlay" alt="" 
-                     onerror="this.style.display='none'">
-                     
-                <!-- Слой клика: Гарантирует, что клик проходит сквозь прозрачные части картинки -->
-                <div class="click-layer" onclick="navigateTo('topup')"></div>
+            <!-- КНОПКА: ТОЛЬКО КАРТИНКА btn.png -->
+            <div class="img-btn-container" onclick="navigateTo('topup')">
+                <img src="btn.png" class="img-btn" alt="Пополнить" onerror="this.style.display='none'">
+                <div class="click-target"></div>
             </div>
 
             <div class="scroll-hint">▼ листай вниз ▼</div>
