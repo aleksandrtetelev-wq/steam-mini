@@ -332,4 +332,174 @@
             <!-- НОВАЯ КНОПКА-КАРТИНКА -->
             <img src="btn.png" class="img-btn" alt="Пополнить" 
                  onclick="navigateTo('topup')" 
-                 onerror="this.style.display='none'; document.getElementById('fallbackBtn').style.display='inline-block'
+                 onerror="this.style.display='none'; document.getElementById('fallbackBtn').style.display='inline-block'">
+            
+            <!-- Запасная кнопка (показывается только если btn.png не найден) -->
+            <button id="fallbackBtn" class="melt-btn" style="display:none;" onclick="navigateTo('topup')">ПОПОЛНИТЬ</button>
+
+            <div class="scroll-hint">▼ листай вниз ▼</div>
+        </div>
+
+        <div class="reviews-section" id="reviewsSection">
+            <div class="reviews-title">Отзывы своих</div>
+            <div class="reviews-container">
+                <div class="marquee-track">
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@alex_gmrr</span><span class="review-text">Баланс упал за 2 минуты, огонь</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kvnt99</span><span class="review-text">Лучший курс рубля, беру постоянно</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xx</span><span class="review-text">Поддержка ответила ночью, респект</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@alex_gmrr</span><span class="review-text">Баланс упал за 2 минуты, огонь</span></div>
+                    <div class="review-card"><span class="stars">★★★★★</span><span class="review-user">@kvnt99</span><span class="review-text">Лучший курс рубля, беру постоянно</span></div>
+                    <div class="review-card"><span class="stars">★★★★☆</span><span class="review-user">@sniper_xx</span><span class="review-text">Поддержка ответила ночью, респект</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПОПОЛНЕНИЕ -->
+    <div id="topupPage" class="page">
+        <div class="form-card">
+            <h2 class="form-title chrome-text">Пополнение</h2>
+
+            <label class="input-label">Логин Steam</label>
+            <input type="text" class="custom-input" id="steamLoginInput" placeholder="твой никнейм">
+
+            <label class="input-label">Сумма (₽)</label>
+            <div class="amount-chips">
+                <div class="chip" onclick="selectAmount(this, 500)">500 ₽</div>
+                <div class="chip selected" onclick="selectAmount(this, 1000)">1000 ₽</div>
+                <div class="chip" onclick="selectAmount(this, 2000)">2000 ₽</div>
+                <div class="chip" onclick="selectAmount(this, 5000)">5000 ₽</div>
+            </div>
+            <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" oninput="clearChipsSelection()">
+
+            <div class="price-row"><span>Комиссия (3%):</span><span id="commissionDisplay">30 ₽</span></div>
+            <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">1030 ₽</span></div>
+
+            <button class="melt-btn btn-full" onclick="processPayment(event)">ОПЛАТИТЬ</button>
+
+            <div style="text-align: center;">
+                <a class="back-link" onclick="navigateTo('home'); return false;">← назад</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div id="faqPage" class="page">
+        <h2 class="page-title chrome-text">FAQ</h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Как быстро приходит баланс? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">От 1 до 5 минут после оплаты. Зачисление идёт напрямую на кошелёк Steam, без кодов и ключей.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Это безопасно для аккаунта? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Да. Нам нужен только твой никнейм. Пароль и доступ к аккаунту мы никогда не запрашиваем.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Чем можно оплатить? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Карты РФ, СБП, криптовалюта (USDT, BTC) и электронные кошельки.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Баланс не пришёл, что делать? <span class="faq-arrow">▼</span></div>
+                <div class="faq-answer">Если прошло больше часа — напиши в поддержку через меню (⋮) и приложи чек. Решим быстро.</div>
+            </div>
+        </div>
+        <div style="text-align:center;"><a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a></div>
+    </div>
+
+    <!-- ПОДДЕРЖКА -->
+    <div id="supportPage" class="page">
+        <div class="form-card" style="text-align:center;">
+            <h2 class="form-title chrome-text">Поддержка</h2>
+            <p style="color: var(--text-muted); margin: 20px 0 30px; font-size: 14px;">Онлайн 24/7. Пиши — разрулим любой вопрос.</p>
+
+            <button class="melt-btn btn-full" onclick="tg.showAlert('Скоро откроется чат поддержки!')">НАПИСАТЬ НАМ</button>
+
+            <div style="text-align: center;">
+                <a class="back-link" onclick="navigateTo('home'); return false;">← на главную</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        if (tg.setHeaderColor) tg.setHeaderColor('#050505');
+
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId + 'Page').classList.add('active');
+            closeMenu();
+            window.scrollTo(0, 0);
+        }
+
+        function scrollToReviews() {
+            navigateTo('home');
+            setTimeout(() => {
+                document.getElementById('reviewsSection').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('active'); }
+        function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('dropdownMenu');
+            const btn = document.querySelector('.menu-btn');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+        });
+
+        function toggleFaq(el) { el.parentElement.classList.toggle('active'); }
+
+        let currentAmount = 1000;
+        const commissionRate = 0.03;
+
+        function selectAmount(chipEl, val) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            chipEl.classList.add('selected');
+            currentAmount = val;
+            document.getElementById('customAmountInput').value = '';
+            updatePriceDisplay();
+        }
+
+        function clearChipsSelection() {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            const val = parseFloat(document.getElementById('customAmountInput').value);
+            if (!isNaN(val)) { currentAmount = val; updatePriceDisplay(); }
+        }
+
+        function updatePriceDisplay() {
+            const comm = currentAmount * commissionRate;
+            const total = currentAmount + comm;
+            document.getElementById('commissionDisplay').textContent = Math.round(comm) + ' ₽';
+            document.getElementById('totalDisplay').textContent = Math.round(total) + ' ₽';
+        }
+
+        function processPayment(event) {
+            const login = document.getElementById('steamLoginInput').value.trim();
+            if (!login) { tg.showAlert('Введи логин Steam!'); return; }
+            if (currentAmount <= 0) { tg.showAlert('Введи корректную сумму!'); return; }
+
+            const btn = event.target;
+            const original = btn.innerText;
+            btn.innerText = 'ОБРАБОТКА...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerText = original;
+                btn.disabled = false;
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                tg.showPopup({
+                    title: 'Готово',
+                    message: Math.round(currentAmount) + ' ₽ упадут на баланс ' + login + ' в течение нескольких минут.',
+                    buttons: [{ type: 'ok' }]
+                });
+                navigateTo('home');
+            }, 2000);
+        }
+
+        updatePriceDisplay();
+    </script>
+</body>
+</html>
