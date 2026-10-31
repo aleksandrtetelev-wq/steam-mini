@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TOP-UP</title>
     
-    <!-- 1. Библиотека Telegram -->
+    <!-- Библиотека Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- 2. Библиотека Supabase (для работы с базой данных) -->
+    <!-- Библиотека Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -357,24 +357,42 @@
     </div>
 
     <script>
-
-        // 1. Твой Project URL (из General -> Reference ID, добавь https:// и .supabase.co)
+        // ==========================================
+        // 🛑 СЮДА ВСТАВЬ СВОИ ДАННЫЕ ИЗ SUPABASE 🛑
+        // ==========================================
+        
+        // 1. Твой Project URL (пример: https://xxxx.supabase.co)
         const SUPABASE_URL = 'https://jcvjewojcrdodlnezdcu.supabase.co'; 
         
-        // 2. Твой Publishable Key (из API Keys -> sb_publishable...)
+        // 2. Твой Publishable Key (начинается с sb_publishable...)
         const SUPABASE_ANON_KEY = 'sb_publishable_mdTDv95uckmSgAdSSVd3ww_tminw2Yz'; 
 
-        // Инициализация клиента Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabase = null;
+
+        // Безопасная инициализация Supabase
+        try {
+            if (window.supabase && SUPABASE_URL.includes('.supabase.co') && !SUPABASE_URL.includes('твой')) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("✅ Supabase подключен успешно");
+            } else {
+                console.warn("⚠️ Supabase не настроен. Работаю в оффлайн-режиме.");
+            }
+        } catch (e) {
+            console.error("❌ Ошибка подключения к Supabase:", e);
+            supabase = null;
+        }
 
         // ==========================================
-        // ЛОГИКА ПРИЛОЖЕНИЯ
+        // 📱 TELEGRAM WEB APP INIT
         // ==========================================
-
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
         if (tg.setHeaderColor) tg.setHeaderColor('#050505');
+
+        // ==========================================
+        // 🧠 ЛОГИКА ПРИЛОЖЕНИЯ
+        // ==========================================
 
         let currentAmount = 500;
         const commissionRate = 0.03;
@@ -382,7 +400,10 @@
 
         function navigateTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId + 'Page').classList.add('active');
+            const targetPage = document.getElementById(pageId + 'Page');
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
             closeMenu();
             window.scrollTo(0, 0);
             if (pageId === 'profile') renderProfile();
@@ -391,20 +412,29 @@
         function scrollToReviews() {
             navigateTo('home');
             setTimeout(() => {
-                document.getElementById('reviewsSection').scrollIntoView({ behavior: 'smooth' });
+                const reviewsSec = document.getElementById('reviewsSection');
+                if(reviewsSec) reviewsSec.scrollIntoView({ behavior: 'smooth' });
             }, 100);
         }
 
-        function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('active'); }
-        function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
+        function toggleMenu() { 
+            document.getElementById('dropdownMenu').classList.toggle('active'); 
+        }
+        function closeMenu() { 
+            document.getElementById('dropdownMenu').classList.remove('active'); 
+        }
 
         document.addEventListener('click', function(e) {
             const menu = document.getElementById('dropdownMenu');
             const btn = document.querySelector('.menu-btn');
-            if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+            if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+                closeMenu();
+            }
         });
 
-        function toggleFaq(el) { el.parentElement.classList.toggle('active'); }
+        function toggleFaq(el) { 
+            el.parentElement.classList.toggle('active'); 
+        }
 
         function selectAmount(chipEl, val) {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
@@ -441,9 +471,12 @@
         async function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
             
-            if (!login) { tg.showAlert('Введи логин Steam!'); return; }
+            if (!login) { 
+                tg.showAlert('Введи логин Steam!'); 
+                return; 
+            }
             if (isNaN(currentAmount) || currentAmount < MIN_AMOUNT) { 
-                tg.showAlert(`Минимальная сумма пополнения: ${MIN_AMOUNT} ₽`); 
+                tg.showAlert(`Минимальная сумма: ${MIN_AMOUNT} ₽`); 
                 return; 
             }
 
@@ -452,16 +485,29 @@
             btn.innerText = 'ОТПРАВКА...';
             btn.disabled = true;
 
-            // Данные для отправки в базу
-            const orderData = {
-                tg_user_id: tg.initDataUnsafe.user.id,
-                steam_login: login,
-                amount_rub: Math.round(currentAmount),
-                status: 'pending'
-            };
+            // Если базы нет — демо режим
+            if (!supabase) {
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    tg.showPopup({
+                        title: 'Демо режим',
+                        message: `Заказ создан локально.\nЛогин: ${login}\nСумма: ${Math.round(currentAmount)} ₽\n\n(База данных не подключена)`,
+                        buttons: [{ type: 'ok' }]
+                    });
+                    navigateTo('home');
+                }, 1000);
+                return;
+            }
 
             try {
-                // ОТПРАВКА В СУПАБЕЙЗ
+                const orderData = {
+                    tg_user_id: tg.initDataUnsafe.user.id,
+                    steam_login: login,
+                    amount_rub: Math.round(currentAmount),
+                    status: 'pending'
+                };
+
                 const { data, error } = await supabase.from('orders').insert([orderData]);
 
                 if (error) throw error;
@@ -470,21 +516,20 @@
                 
                 tg.showPopup({
                     title: 'Готово ✅',
-                    message: `Заказ принят!\nЛогин: ${login}\nСумма: ${Math.round(currentAmount)} ₽\n\nМы свяжемся с вами в течение 5 минут.`,
+                    message: `Заказ принят!\nЛогин: ${login}\nСумма: ${Math.round(currentAmount)} ₽`,
                     buttons: [{ type: 'ok' }]
                 });
                 
                 navigateTo('home');
             } catch (err) {
                 console.error(err);
-                tg.showAlert("Ошибка сети. Проверьте интернет.");
+                tg.showAlert("Ошибка сети. Попробуй позже.");
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
         }
 
         async function renderProfile() {
-            // 1. User Data
             const user = tg.initDataUnsafe?.user || {};
             const firstName = user.first_name || 'Гость';
             const lastName = user.last_name ? ' ' + user.last_name : '';
@@ -504,67 +549,74 @@
                 avatarImg.src = ''; 
             }
 
-            // 2. Запрос к базе данных
             const listContainer = document.getElementById('ordersList');
+            
+            if (!supabase) {
+                listContainer.innerHTML = '<div class="empty-history">База данных не подключена.<br>История недоступна.</div>';
+                document.getElementById('statOrders').textContent = "0";
+                document.getElementById('statSum').textContent = "0 ₽";
+                document.getElementById('statSuccess').textContent = "0%";
+                return;
+            }
+
             listContainer.innerHTML = '<div class="empty-history">Загрузка...</div>';
 
-            const { data: orders, error } = await supabase
-                .from('orders')
-                .select('*')
-                .eq('tg_user_id', userId)
-                .order('created_at', { ascending: false });
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('tg_user_id', userId)
+                    .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error(error);
-                listContainer.innerHTML = '<div class="empty-history">Ошибка загрузки истории.</div>';
-                return;
-            }
+                if (error) throw error;
 
-            // Статистика
-            const totalOrders = orders.length;
-            const completedOrders = orders.filter(o => o.status === 'completed').length;
-            const totalSum = orders.reduce((acc, curr) => acc + curr.amount_rub, 0);
-            
-            document.getElementById('statOrders').textContent = totalOrders;
-            document.getElementById('statSum').textContent = totalSum.toLocaleString() + ' ₽';
-            document.getElementById('statSuccess').textContent = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) + '%' : '0%';
-
-            // Список
-            listContainer.innerHTML = '';
-            if (orders.length === 0) {
-                listContainer.innerHTML = '<div class="empty-history">Нет истории заказов.<br>Сделайте первое пополнение!</div>';
-                return;
-            }
-
-            orders.forEach(order => {
-                const card = document.createElement('div');
-                card.className = 'order-card';
+                const totalOrders = orders.length;
+                const completedOrders = orders.filter(o => o.status === 'completed').length;
+                const totalSum = orders.reduce((acc, curr) => acc + curr.amount_rub, 0);
                 
-                let statusClass = '';
-                let statusText = '';
-                if (order.status === 'completed') {
-                    statusClass = 'status-completed';
-                    statusText = 'Выполнен';
-                } else if (order.status === 'cancelled') {
-                    statusClass = 'status-cancelled';
-                    statusText = 'Отменен';
-                } else {
-                    statusClass = 'status-pending';
-                    statusText = 'В работе';
+                document.getElementById('statOrders').textContent = totalOrders;
+                document.getElementById('statSum').textContent = totalSum.toLocaleString() + ' ₽';
+                document.getElementById('statSuccess').textContent = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) + '%' : '0%';
+
+                listContainer.innerHTML = '';
+                if (orders.length === 0) {
+                    listContainer.innerHTML = '<div class="empty-history">Нет истории заказов.<br>Сделайте первое пополнение!</div>';
+                    return;
                 }
 
-                const dateObj = new Date(order.created_at);
-                const dateString = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                orders.forEach(order => {
+                    const card = document.createElement('div');
+                    card.className = 'order-card';
+                    
+                    let statusClass = '';
+                    let statusText = '';
+                    if (order.status === 'completed') {
+                        statusClass = 'status-completed';
+                        statusText = 'Выполнен';
+                    } else if (order.status === 'cancelled') {
+                        statusClass = 'status-cancelled';
+                        statusText = 'Отменен';
+                    } else {
+                        statusClass = 'status-pending';
+                        statusText = 'В работе';
+                    }
 
-                card.innerHTML = `
-                    <div class="order-info">
-                        <span class="order-login">${order.steam_login}</span>
-                        <span class="order-date">${dateString} • ${order.amount_rub} ₽</span>
-                    </div>
-                    <span class="order-status ${statusClass}">${statusText}</span>
-                `;
-                listContainer.appendChild(card);
-            });
+                    const dateObj = new Date(order.created_at);
+                    const dateString = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                    card.innerHTML = `
+                        <div class="order-info">
+                            <span class="order-login">${order.steam_login}</span>
+                            <span class="order-date">${dateString} • ${order.amount_rub} ₽</span>
+                        </div>
+                        <span class="order-status ${statusClass}">${statusText}</span>
+                    `;
+                    listContainer.appendChild(card);
+                });
+            } catch (err) {
+                console.error(err);
+                listContainer.innerHTML = '<div class="empty-history">Ошибка загрузки истории.</div>';
+            }
         }
 
         updatePriceDisplay();
