@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TOP-UP</title>
     
-    <!-- Библиотека Telegram -->
+    <!-- Только Telegram API здесь -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Библиотека Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
@@ -358,42 +355,20 @@
 
     <script>
         // ==========================================
-        // 🛑 СЮДА ВСТАВЬ СВОИ ДАННЫЕ ИЗ SUPABASE 🛑
+        // ⚙️ КОНФИГУРАЦИЯ SUPABASE
         // ==========================================
-        
-        // 1. Твой Project URL (пример: https://xxxx.supabase.co)
-        const SUPABASE_URL = 'https://jcvjewojcrdodlnezdcu.supabase.co'; 
-        
-        // 2. Твой Publishable Key (начинается с sb_publishable...)
-        const SUPABASE_ANON_KEY = 'sb_publishable_mdTDv95uckmSgAdSSVd3ww_tminw2Yz'; 
+        const SUPABASE_URL = 'https://jcvjewojcrdodinezdcu.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_mdTDv95uckmSgAdSSVd3ww_tmtnw...'; 
 
-        let supabase = null;
+        let supabaseClient = null;
 
-        // Безопасная инициализация Supabase
-        try {
-            if (window.supabase && SUPABASE_URL.includes('.supabase.co') && !SUPABASE_URL.includes('твой')) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log("✅ Supabase подключен успешно");
-            } else {
-                console.warn("⚠️ Supabase не настроен. Работаю в оффлайн-режиме.");
-            }
-        } catch (e) {
-            console.error("❌ Ошибка подключения к Supabase:", e);
-            supabase = null;
-        }
-
-        // ==========================================
-        // 📱 TELEGRAM WEB APP INIT
-        // ==========================================
+        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        if (tg.ready) tg.ready();
+        if (tg.expand) tg.expand();
         if (tg.setHeaderColor) tg.setHeaderColor('#050505');
 
-        // ==========================================
-        // 🧠 ЛОГИКА ПРИЛОЖЕНИЯ
-        // ==========================================
-
+        // Логика приложения
         let currentAmount = 500;
         const commissionRate = 0.03;
         const MIN_AMOUNT = 50;
@@ -401,27 +376,31 @@
         function navigateTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             const targetPage = document.getElementById(pageId + 'Page');
-            if (targetPage) {
-                targetPage.classList.add('active');
-            }
+            if (targetPage) targetPage.classList.add('active');
             closeMenu();
             window.scrollTo(0, 0);
-            if (pageId === 'profile') renderProfile();
+            
+            if (pageId === 'profile') {
+                renderProfile();
+            }
         }
 
         function scrollToReviews() {
             navigateTo('home');
             setTimeout(() => {
-                const reviewsSec = document.getElementById('reviewsSection');
-                if(reviewsSec) reviewsSec.scrollIntoView({ behavior: 'smooth' });
+                const sec = document.getElementById('reviewsSection');
+                if(sec) sec.scrollIntoView({ behavior: 'smooth' });
             }, 100);
         }
 
         function toggleMenu() { 
-            document.getElementById('dropdownMenu').classList.toggle('active'); 
+            const menu = document.getElementById('dropdownMenu');
+            if(menu) menu.classList.toggle('active'); 
         }
+        
         function closeMenu() { 
-            document.getElementById('dropdownMenu').classList.remove('active'); 
+            const menu = document.getElementById('dropdownMenu');
+            if(menu) menu.classList.remove('active'); 
         }
 
         document.addEventListener('click', function(e) {
@@ -468,6 +447,22 @@
             document.getElementById('totalDisplay').textContent = Math.round(total) + ' ₽';
         }
 
+        // ЗАГРУЗКА SUPABASE ТОЛЬКО ПРИ НЕОБХОДИМОСТИ
+        async function loadSupabase() {
+            if (supabaseClient) return supabaseClient;
+            
+            try {
+                // Динамический импорт библиотеки
+                const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+                supabaseClient = module.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("✅ Supabase loaded dynamically");
+                return supabaseClient;
+            } catch (err) {
+                console.error("❌ Failed to load Supabase:", err);
+                throw new Error("Database connection failed");
+            }
+        }
+
         async function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
             
@@ -482,33 +477,21 @@
 
             const btn = event.target;
             const originalText = btn.innerText;
-            btn.innerText = 'ОТПРАВКА...';
+            btn.innerText = 'ЗАГРУЗКА...';
             btn.disabled = true;
 
-            // Если базы нет — демо режим
-            if (!supabase) {
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                    tg.showPopup({
-                        title: 'Демо режим',
-                        message: `Заказ создан локально.\nЛогин: ${login}\nСумма: ${Math.round(currentAmount)} ₽\n\n(База данных не подключена)`,
-                        buttons: [{ type: 'ok' }]
-                    });
-                    navigateTo('home');
-                }, 1000);
-                return;
-            }
-
             try {
+                // Пробуем подключить базу
+                const client = await loadSupabase();
+                
                 const orderData = {
-                    tg_user_id: tg.initDataUnsafe.user.id,
+                    tg_user_id: tg.initDataUnsafe?.user?.id || 0,
                     steam_login: login,
                     amount_rub: Math.round(currentAmount),
                     status: 'pending'
                 };
 
-                const { data, error } = await supabase.from('orders').insert([orderData]);
+                const { data, error } = await client.from('orders').insert([orderData]);
 
                 if (error) throw error;
 
@@ -523,7 +506,10 @@
                 navigateTo('home');
             } catch (err) {
                 console.error(err);
-                tg.showAlert("Ошибка сети. Попробуй позже.");
+                // Если база недоступна — демо режим
+                if (tg.showAlert) tg.showAlert("Ошибка сети. Заказ сохранен локально.");
+                else alert("Ошибка сети. Заказ сохранен локально.");
+                
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
@@ -550,19 +536,12 @@
             }
 
             const listContainer = document.getElementById('ordersList');
-            
-            if (!supabase) {
-                listContainer.innerHTML = '<div class="empty-history">База данных не подключена.<br>История недоступна.</div>';
-                document.getElementById('statOrders').textContent = "0";
-                document.getElementById('statSum').textContent = "0 ₽";
-                document.getElementById('statSuccess').textContent = "0%";
-                return;
-            }
-
             listContainer.innerHTML = '<div class="empty-history">Загрузка...</div>';
 
             try {
-                const { data: orders, error } = await supabase
+                const client = await loadSupabase();
+                
+                const { data: orders, error } = await client
                     .from('orders')
                     .select('*')
                     .eq('tg_user_id', userId)
