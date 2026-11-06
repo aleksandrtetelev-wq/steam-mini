@@ -175,6 +175,12 @@
         
         .pay-instruction { color: #aaa; font-size: 13px; margin-bottom: 15px; line-height: 1.5; }
         .pay-amount-display { font-size: 28px; color: var(--primary); font-weight: bold; margin-bottom: 20px; }
+        .copy-sum-btn {
+            background: #222; border: 1px solid #444; color: #fff;
+            padding: 8px 12px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; margin-top: 5px; display: inline-block;
+        }
+        .copy-sum-btn:active { background: #333; }
     </style>
 </head>
 <body>
@@ -273,10 +279,10 @@
             </div>
             <input type="number" class="custom-input" id="customAmountInput" placeholder="или своя сумма" step="1" oninput="clearChipsSelection()">
 
-            <div class="price-row"><span>Комиссия (5%):</span><span id="commissionDisplay">25 ₽</span></div>
-            <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">525 ₽</span></div>
+            <div class="price-row"><span>Комиссия (4%):</span><span id="commissionDisplay">20 ₽</span></div>
+            <div class="price-total"><span class="chrome-text">Итого:</span><span class="chrome-text" id="totalDisplay">520 ₽</span></div>
 
-            <button class="big-pay-btn" onclick="processPayment(event)">ОПЛАТИТЬ ЧЕРЕЗ ЮMONEY</button>
+            <button class="big-pay-btn" onclick="processPayment(event)">ОПЛАТИТЬ</button>
 
             <div style="text-align: center;">
                 <a class="back-link" onclick="navigateTo('home'); return false;">← назад</a>
@@ -415,7 +421,7 @@
 
         // Логика приложения
         let currentAmount = 500;
-        const commissionRate = 0.05; // 5% комиссия сервиса
+        const commissionRate = 0.04; // <<< ИЗМЕНЕНО НА 4% >>>
         const MIN_AMOUNT = 50;
 
         function navigateTo(pageId) {
@@ -543,15 +549,9 @@
             
             const contentArea = document.getElementById('modalContentArea');
             
-            // ФОРМИРУЕМ ССЫЛКУ НА ОПЛАТУ ЧЕРЕЗ ЮMONEY QUICKPAY
-            // receiver - куда платить (твой кошелек)
-            // sum - сколько платить (автоматически подставится!)
-            // label - номер заказа (для твоей проверки)
-            // comment - описание
-            
-            // Используем официальный эндпоинт quickpay/confirm.xml
-            // Он принимает сумму в параметрах и создает готовую форму
-            const paymentLink = `https://yoomoney.ru/quickpay/confirm.xml?receiver=${WALLET_ID}&sum=${sum}&label=${orderId}&comment=Popolnenie+Steam&targets-sum=${sum}`;
+            // ФОРМИРУЕМ ССЫЛКУ НА ПЕРЕВОД ЧЕРЕЗ /to/
+            // Эта ссылка ведет на страницу ввода суммы пользователем
+            const paymentLink = `https://yoomoney.ru/to/${WALLET_ID}`;
 
             contentArea.innerHTML = `
                 <div style="text-align:center;">
@@ -559,19 +559,21 @@
                     <p style="color:#888; font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Сумма к оплате</p>
                     <h2 style="font-family:'Unbounded'; color:#fff; font-size:36px; margin-bottom:20px;">${sum} ₽</h2>
                     
+                    <!-- Кнопка копирования суммы -->
+                    <button onclick="navigator.clipboard.writeText('${sum}'); this.innerText='Скопировано!'" class="copy-sum-btn">📋 Скопировать сумму (${sum})</button>
+                    
                     <!-- Кнопка перехода -->
-                    <a href="${paymentLink}" target="_blank" onclick="markAsPaidPending('${orderId}')" style="display:block; width:100%; padding:18px; background:linear-gradient(90deg, #8b5cf6, #ec4899); color:white; text-decoration:none; font-weight:bold; border-radius:12px; margin-bottom:15px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.1s;">
-                        💳 ПЕРЕВЕСТИ ЧЕРЕЗ ЮMONEY (${sum} ₽)
+                    <a href="${paymentLink}" target="_blank" onclick="markAsPaidPending('${orderId}')" style="display:block; width:100%; padding:18px; background:linear-gradient(90deg, #8b5cf6, #ec4899); color:white; text-decoration:none; font-weight:bold; border-radius:12px; margin-top:15px; margin-bottom:15px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.1s;">
+                        💳 ПЕРЕВЕСТИ В ЮMONEY
                     </a>
 
                     <div style="background:#222; padding:15px; border-radius:8px; margin-top:10px; text-align:left;">
                         <p style="font-size:13px; color:#ccc; line-height:1.5;">
-                            1. Нажмите фиолетовую кнопку выше.<br>
-                            2. Откроется страница ЮMoney.<br>
-                            3. Сумма <b>${sum} ₽</b> будет указана автоматически.<br>
-                            4. Выберите способ оплаты (Карта, Кошелек, СБП).<br>
-                            5. Подтвердите перевод.<br>
-                            6. Вернитесь сюда и нажмите "Я оплатил".
+                            1. Нажмите кнопку выше.<br>
+                            2. В открывшейся форме <b>введите сумму: ${sum}</b>.<br>
+                            3. Выберите способ оплаты (Карта, Кошелек, СБП).<br>
+                            4. Подтвердите перевод.<br>
+                            5. Вернитесь сюда и нажмите "Я оплатил".
                         </p>
                     </div>
                 </div>
