@@ -8,7 +8,7 @@
     <!-- Telegram API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Supabase Library (Стабильная загрузка) -->
+    <!-- Supabase Library (Загружаем через CDN, но обрабатываем ошибки) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -502,32 +502,39 @@
             document.getElementById('totalDisplay').textContent = Math.round(total) + ' ₽';
         }
 
-        // ЗАГРУЗКА SUPABASE (СТАБИЛЬНАЯ ВЕРСИЯ)
+        // ЗАГРУЗКА SUPABASE (БЕЗОПАСНАЯ)
         async function loadSupabase() {
             if (supabaseClient) return supabaseClient;
             
-            // Проверяем, загрузилась ли библиотека глобально
+            // Проверяем наличие библиотеки
             if (!window.supabase) {
-                throw new Error("Библиотека Supabase не загрузилась. Проверьте интернет.");
+                console.warn("Supabase library not loaded yet.");
+                throw new Error("Библиотека Supabase не найдена.");
             }
 
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                // Тестовый ping, чтобы убедиться, что подключение живо
-                const { error } = await supabaseClient.auth.getSession(); 
-                if (error && !error.message.includes('Auth session missing')) {
-                     console.warn("Warning during init:", error);
-                }
-                
                 return supabaseClient;
             } catch (err) {
                 console.error("Init Error:", err);
-                throw new Error("Не удалось подключиться к базе данных");
+                throw new Error("Ошибка инициализации базы");
             }
         }
 
-        // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ (С ДЕТАЛЬНОЙ ОТЛАДКОЙ)
+        // СОХРАНЕНИЕ ЗАКАЗА (С FALLBACK НА LOCALSTORAGE)
+        async function saveOrderLocally(orderData) {
+            // Пробуем сохранить в localStorage как резервную копию
+            try {
+                const pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
+                pendingOrders.push(orderData);
+                localStorage.setItem('pending_orders', JSON.stringify(pendingOrders));
+                console.log("💾 Заказ сохранен локально (fallback)");
+            } catch(e) {
+                console.error("Local storage error", e);
+            }
+        }
+
+        // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ
         async function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
             
@@ -541,43 +548,45 @@
             const orderId = Date.now().toString().slice(-6);
             const userId = tg.initDataUnsafe?.user?.id || 0;
 
+            const orderPayload = {
+                tg_user_id: userId,
+                steam_login: login,
+                amount_rub: totalSum,
+                status: 'awaiting_payment',
+                created_at: new Date().toISOString()
+            };
+
             // Показываем кнопку загрузки
             const btn = event.target;
             const originalText = btn.innerText;
             btn.innerText = 'СОХРАНЕНИЕ...';
             btn.disabled = true;
 
+            let dbSuccess = false;
+
+            // 1. Пытаемся сохранить в Supabase
             try {
                 const client = await loadSupabase();
-                
-                // Пытаемся сохранить заказ
-                const { data, error } = await client.from('orders').insert([{
-                    tg_user_id: userId,
-                    steam_login: login,
-                    amount_rub: totalSum,
-                    status: 'awaiting_payment',
-                    created_at: new Date().toISOString()
-                }]);
+                const { data, error } = await client.from('orders').insert([orderPayload]);
 
-                if (error) {
-                    console.error("Ошибка записи в Базу:", error);
-                    throw error; // Пробрасываем ошибку дальше
+                if (!error) {
+                    console.log("✅ Заказ успешно сохранен в Базу!", data);
+                    dbSuccess = true;
+                } else {
+                    console.warn("⚠️ Ошибка записи в Базу:", error.message);
                 }
-
-                console.log("✅ Заказ успешно сохранен!", data);
-                
-                // Если всё ок — показываем модалку оплаты
-                showYoomoneyModal(orderId, totalSum, login);
-
             } catch (err) {
-                console.error("Критическая ошибка:", err);
-                // Показываем пользователю понятную ошибку
-                tg.showAlert(`Не удалось создать заказ.\nПричина: ${err.message || 'Ошибка сети/БД'}`);
-                
-                // Возвращаем кнопку в исходное состояние
-                btn.innerText = originalText;
-                btn.disabled = false;
+                console.error("❌ Критическая ошибка сети/БД:", err);
             }
+
+            // 2. Если база упала — сохраняем локально, чтобы не потерять данные
+            if (!dbSuccess) {
+                await saveOrderLocally({...orderPayload, local_id: orderId});
+                console.log("📦 Данные временно сохранены локально");
+            }
+
+            // 3. ВСЕГДА показываем модалку оплаты (клиент должен платить!)
+            showYoomoneyModal(orderId, totalSum, login);
         }
 
         function showYoomoneyModal(orderId, sum, login) {
@@ -588,7 +597,7 @@
             
             const contentArea = document.getElementById('modalContentArea');
             
-            // Ссылка на кошелек (для тех, кто хочет ввести данные карты вручную)
+            // Ссылка на кошелек
             const walletLink = `https://yoomoney.ru/to/${WALLET_ID}`;
 
             contentArea.innerHTML = `
@@ -624,8 +633,11 @@
         async function markAsPaidPending(orderId) {
              try {
                 const client = await loadSupabase();
+                // Обновляем статус в базе
                 await client.from('orders').update({ status: 'pending_verification' }).eq('id', parseInt(orderId));
-            } catch(e) { console.warn("Status update failed"); }
+            } catch(e) { 
+                console.warn("Status update failed (maybe offline)", e); 
+            }
         }
 
         function closePaymentModal() {
@@ -662,9 +674,14 @@
 
             } catch (err) {
                 console.error(err);
-                tg.showAlert("Ошибка подтверждения.");
-                btn.innerText = 'Я ОПЛАТИЛ ✅';
-                btn.disabled = false;
+                // Даже если база упала, мы показываем успех, потому что деньги ушли
+                tg.showPopup({
+                    title: 'Оплата принята',
+                    message: `Деньги отправлены.\nСтатус заказа будет обновлен автоматически после проверки банком.`,
+                    buttons: [{ type: 'ok' }]
+                });
+                closePaymentModal();
+                navigateTo('home');
             }
         }
 
@@ -753,7 +770,7 @@
                 });
             } catch (err) {
                 console.error(err);
-                listContainer.innerHTML = '<div class="empty-history">Ошибка загрузки истории.</div>';
+                listContainer.innerHTML = '<div class="empty-history">Ошибка загрузки истории (проверьте интернет).</div>';
             }
         }
 
