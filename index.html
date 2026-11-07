@@ -421,7 +421,7 @@
 
         // Логика приложения
         let currentAmount = 500;
-        const commissionRate = 0.04; // <<< ИЗМЕНЕНО НА 4% >>>
+        const commissionRate = 0.04; // Комиссия 4%
         const MIN_AMOUNT = 50;
 
         function navigateTo(pageId) {
@@ -510,7 +510,7 @@
             }
         }
 
-        // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ
+        // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ (С ДЕТАЛЬНОЙ ОТЛАДКОЙ)
         async function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
             
@@ -522,23 +522,45 @@
 
             const totalSum = Math.round(currentAmount * (1 + commissionRate));
             const orderId = Date.now().toString().slice(-6);
+            const userId = tg.initDataUnsafe?.user?.id || 0;
 
-            // 1. Сохраняем заказ в базу
+            // Показываем кнопку загрузки
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'СОХРАНЕНИЕ...';
+            btn.disabled = true;
+
             try {
                 const client = await loadSupabase();
-                await client.from('orders').insert([{
-                    tg_user_id: tg.initDataUnsafe?.user?.id || 0,
+                
+                // Пытаемся сохранить заказ
+                const { data, error } = await client.from('orders').insert([{
+                    tg_user_id: userId,
                     steam_login: login,
                     amount_rub: totalSum,
                     status: 'awaiting_payment',
                     created_at: new Date().toISOString()
                 }]);
-            } catch(e) { 
-                console.warn("DB save failed", e); 
-            }
 
-            // 2. Показываем модалку со ссылкой на оплату
-            showYoomoneyModal(orderId, totalSum, login);
+                if (error) {
+                    console.error("Ошибка записи в Базу:", error);
+                    throw error; // Пробрасываем ошибку дальше
+                }
+
+                console.log("✅ Заказ успешно сохранен!", data);
+                
+                // Если всё ок — показываем модалку оплаты
+                showYoomoneyModal(orderId, totalSum, login);
+
+            } catch (err) {
+                console.error("Критическая ошибка:", err);
+                // Показываем пользователю понятную ошибку
+                tg.showAlert(`Не удалось создать заказ.\nПричина: ${err.message || 'Ошибка сети/БД'}`);
+                
+                // Возвращаем кнопку в исходное состояние
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
 
         function showYoomoneyModal(orderId, sum, login) {
@@ -549,21 +571,21 @@
             
             const contentArea = document.getElementById('modalContentArea');
             
-            // ФОРМИРУЕМ ССЫЛКУ НА ПЕРЕВОД ЧЕРЕЗ /to/
-            // Эта ссылка ведет на страницу ввода суммы пользователем
-            const paymentLink = `https://yoomoney.ru/to/${WALLET_ID}`;
+            // Ссылка на кошелек (для тех, кто хочет ввести данные карты вручную)
+            const walletLink = `https://yoomoney.ru/to/${WALLET_ID}`;
 
             contentArea.innerHTML = `
                 <div style="text-align:center;">
+                    <p style="color:#aaa; font-size:13px; margin-bottom:15px;">Оплата через ЮMoney</p>
+                    
                     <!-- Сумма крупным шрифтом -->
-                    <p style="color:#888; font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Сумма к оплате</p>
-                    <h2 style="font-family:'Unbounded'; color:#fff; font-size:36px; margin-bottom:20px;">${sum} ₽</h2>
+                    <p style="color:#888; font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Переведите точную сумму:</p>
+                    <h2 style="font-family:'Unbounded'; color:#ffc107; font-size:36px; margin-bottom:20px;">${sum} ₽</h2>
                     
-                    <!-- Кнопка копирования суммы -->
-                    <button onclick="navigator.clipboard.writeText('${sum}'); this.innerText='Скопировано!'" class="copy-sum-btn">📋 Скопировать сумму (${sum})</button>
-                    
+                    <button onclick="navigator.clipboard.writeText('${sum}'); this.innerText='Скопировано!'" class="copy-sum-btn" style="margin-bottom:15px;">📋 Скопировать сумму (${sum})</button>
+
                     <!-- Кнопка перехода -->
-                    <a href="${paymentLink}" target="_blank" onclick="markAsPaidPending('${orderId}')" style="display:block; width:100%; padding:18px; background:linear-gradient(90deg, #8b5cf6, #ec4899); color:white; text-decoration:none; font-weight:bold; border-radius:12px; margin-top:15px; margin-bottom:15px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.1s;">
+                    <a href="${walletLink}" target="_blank" onclick="markAsPaidPending('${orderId}')" style="display:block; width:100%; padding:18px; background:linear-gradient(90deg, #8b5cf6, #ec4899); color:white; text-decoration:none; font-weight:bold; border-radius:12px; margin-top:15px; margin-bottom:15px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.1s;">
                         💳 ПЕРЕВЕСТИ В ЮMONEY
                     </a>
 
