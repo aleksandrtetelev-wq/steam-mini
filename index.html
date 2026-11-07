@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TOP-UP</title>
     
-    <!-- Только Telegram API -->
+    <!-- Telegram API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Supabase Library (Стабильная загрузка) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
@@ -404,7 +407,8 @@
         // ==========================================
         
         const SUPABASE_URL = 'https://jcvjewojcrdodinezdcu.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'sb_publishable_mdTDv95uckmSgAdSSVd3ww_tminw2Yz'; 
+        // !!! ВАЖНО: ВСТАВЬ СЮДА СВОЙ ПОЛНЫЙ РЕАЛЬНЫЙ KEY БЕЗ ТОЧЕК !!!
+        const SUPABASE_ANON_KEY = 'sb_publishable_mdTDv95uckmSgAdSSVd3ww_tmtnw...'; 
 
         // ТВОЙ НОМЕР КОШЕЛЬКА (Без пробелов!)
         const WALLET_ID = '4100118880998629'; 
@@ -498,15 +502,28 @@
             document.getElementById('totalDisplay').textContent = Math.round(total) + ' ₽';
         }
 
-        // ЗАГРУЗКА SUPABASE
+        // ЗАГРУЗКА SUPABASE (СТАБИЛЬНАЯ ВЕРСИЯ)
         async function loadSupabase() {
             if (supabaseClient) return supabaseClient;
+            
+            // Проверяем, загрузилась ли библиотека глобально
+            if (!window.supabase) {
+                throw new Error("Библиотека Supabase не загрузилась. Проверьте интернет.");
+            }
+
             try {
-                const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-                supabaseClient = module.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Тестовый ping, чтобы убедиться, что подключение живо
+                const { error } = await supabaseClient.auth.getSession(); 
+                if (error && !error.message.includes('Auth session missing')) {
+                     console.warn("Warning during init:", error);
+                }
+                
                 return supabaseClient;
             } catch (err) {
-                throw new Error("Database connection failed");
+                console.error("Init Error:", err);
+                throw new Error("Не удалось подключиться к базе данных");
             }
         }
 
