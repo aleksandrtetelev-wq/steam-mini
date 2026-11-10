@@ -453,9 +453,8 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_mdTDv95uckmSgAdSSVd3ww_tminw2Yz'; 
         const WALLET_ID = '4100118880998629'; 
         
-        // !!! ЗАМЕНИ ЭТО ЧИСЛО НА СВОЙ РЕАЛЬНЫЙ TELEGRAM ID !!!
-        // Узнай его у @userinfobot
-        const ADMIN_TG_ID = 123456789; 
+        // !!! ТВОЙ РЕАЛЬНЫЙ TELEGRAM ID !!!
+        const ADMIN_TG_ID = 1123180938; 
 
         let supabaseClient = null;
         let currentOrderId = '';
@@ -709,11 +708,24 @@
             return results ? decodeURIComponent(results[1]) : null;
         }
 
-        // === АДМИН ПАНЕЛЬ (СКРЫТАЯ ДЛЯ ОБЫЧНЫХ) ===
+        // === АДМИН ПАНЕЛЬ (ЖЕСТКАЯ ПРОВЕРКА ТИПА ДАННЫХ) ===
+        
+        function checkIsOwner() {
+            const rawId = tg.initDataUnsafe?.user?.id;
+            if (!rawId) return false;
+
+            // Принудительно приводим оба значения к ЧИСЛУ через Number()
+            // Это решает проблему, когда один ID — строка "123", а другой — число 123
+            const currentUserId = Number(rawId);
+            const ownerId = Number(ADMIN_TG_ID);
+
+            console.log("DEBUG: Current User ID =", currentUserId, "| Owner ID =", ownerId);
+
+            return currentUserId === ownerId;
+        }
+
         function initAdminAccess() {
-            const myId = tg.initDataUnsafe?.user?.id;
-            // Если твой ID совпадает с тем, что в константе ADMIN_TG_ID
-            if (myId == 1123180938) {
+            if (checkIsOwner()) {
                 // Показываем кнопку только владельцу
                 const adminBtn = document.getElementById('adminBtn');
                 if(adminBtn) adminBtn.style.display = 'flex';
@@ -721,12 +733,13 @@
         }
 
         function openAdminLogin() {
-            const myId = tg.initDataUnsafe?.user?.id;
-            if (myId == ADMIN_TG_ID) {
+            if (checkIsOwner()) {
                 isAdminLoggedIn = true;
                 navigateTo('admin');
             } else {
-                tg.showAlert('Доступ запрещен.');
+                // Если вдруг не пустило, выводим точные цифры для отладки
+                const myRawId = tg.initDataUnsafe?.user?.id;
+                tg.showAlert(`Доступ запрещен.\nТвой ID: ${myRawId}\nОжидаемый: ${ADMIN_TG_ID}`);
             }
         }
 
