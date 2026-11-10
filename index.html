@@ -142,17 +142,40 @@
         .status-cancelled { background: rgba(231, 76, 60, 0.15); color: var(--danger); border: 1px solid rgba(231, 76, 60, 0.3); }
         .empty-history { text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px; padding: 20px; border: 1px dashed var(--border); clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); }
 
-        /* Referral Box */
+        /* Referral Box (CHROME STYLE) */
         .referral-box {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            padding: 20px; border-radius: 12px; margin: 20px; text-align: center;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid var(--border);
+            padding: 20px; 
+            margin: 20px auto;
+            max-width: 420px;
+            clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .referral-box::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent 60%);
+            pointer-events: none;
         }
         .ref-code {
-            font-family: monospace; font-size: 18px; color: #fff; 
-            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px;
-            display: inline-block; margin: 10px 0; user-select: all;
+            font-family: 'Unbounded', monospace; font-size: 18px; color: #fff; 
+            background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px;
+            display: inline-block; margin: 15px 0; user-select: all;
+            border: 1px solid rgba(255,255,255,0.1);
+            letter-spacing: 1px;
         }
+        .copy-ref-btn {
+            background: linear-gradient(180deg, #d6d6d6 0%, #8c8c8c 100%);
+            border: none; color: #000; font-weight: 800;
+            padding: 10px 20px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+            clip-path: polygon(0 5px, 5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
+            transition: all 0.2s;
+        }
+        .copy-ref-btn:active { transform: scale(0.95); }
 
         /* Admin Panel Styles */
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 20px; }
@@ -203,7 +226,8 @@
             <button class="menu-item" onclick="scrollToReviews()">Отзывы</button>
             <button class="menu-item" onclick="navigateTo('faq')">FAQ</button>
             <button class="menu-item" onclick="navigateTo('support')">Поддержка</button>
-            <button class="menu-item" onclick="openAdminLogin()" style="color: #ff4444;">🔒 Админ</button>
+            <!-- Кнопка админа скрыта по умолчанию, JS покажет её только владельцу -->
+            <button class="menu-item admin-only" id="adminBtn" style="display:none; color: #ff4444;" onclick="openAdminLogin()">🔒 Админ</button>
         </div>
     </header>
 
@@ -297,12 +321,15 @@
             </div>
         </div>
 
-        <!-- Реферальный блок -->
+        <!-- Реферальный блок (Новый стиль) -->
         <div class="referral-box">
-            <h3 style="font-family:'Unbounded'; font-size:14px; margin-bottom:10px;">👥 Приглашай друзей</h3>
-            <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Делись ссылкой и получай бонусы!</p>
-            <div class="ref-code" id="myRefCode">Loading...</div>
-            <button onclick="copyRefLink()" style="background:#333; border:none; color:#fff; padding:8px 15px; border-radius:6px; cursor:pointer; font-size:12px;">📋 Скопировать ссылку</button>
+            <h3 class="chrome-text" style="font-family:'Unbounded'; font-size:16px; margin-bottom:10px;">👥 ПРИГЛАШАЙ СВОИХ</h3>
+            <p style="font-size:12px; color:#aaa; margin-bottom:15px;">Делись ссылкой — получай бонусы на баланс!</p>
+            
+            <div class="ref-code" id="myRefCode">LOADING...</div>
+            
+            <br>
+            <button onclick="copyRefLink()" class="copy-ref-btn">📋 КОПИРОВАТЬ ССЫЛКУ</button>
         </div>
 
         <div class="history-section">
@@ -663,14 +690,23 @@
             return results ? decodeURIComponent(results[1]) : null;
         }
 
-        // === АДМИН ПАНЕЛЬ ===
-        function openAdminLogin() {
+        // === АДМИН ПАНЕЛЬ (СКРЫТАЯ ДЛЯ ОБЫЧНЫХ) ===
+        function initAdminAccess() {
             const myId = tg.initDataUnsafe?.user?.id;
             if (myId == 1123180938) {
+                // Показываем кнопку только владельцу
+                const adminBtn = document.getElementById('adminBtn');
+                if(adminBtn) adminBtn.style.display = 'flex';
+            }
+        }
+
+        function openAdminLogin() {
+            const myId = tg.initDataUnsafe?.user?.id;
+            if (myId == ADMIN_TG_ID) {
                 isAdminLoggedIn = true;
                 navigateTo('admin');
             } else {
-                tg.showAlert('Доступ запрещен. Вы не владелец.');
+                tg.showAlert('Доступ запрещен.');
             }
         }
 
@@ -756,7 +792,11 @@
             }
         }
 
-        updatePriceDisplay();
+        // Запуск инициализации при загрузке страницы
+        window.onload = function() {
+            updatePriceDisplay();
+            initAdminAccess(); // Проверяем, кто зашел
+        };
     </script>
 </body>
 </html>
