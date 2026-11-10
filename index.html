@@ -185,17 +185,40 @@
         }
         .copy-sum-btn:active { background: #333; }
         
-        /* Referral Section Styles */
+        /* Referral Section Styles (CHROME STYLE) */
         .referral-box {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid var(--border);
+            padding: 20px; 
+            margin: 20px auto;
+            max-width: 420px;
+            clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .referral-box::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent 60%);
+            pointer-events: none;
         }
         .ref-code {
-            font-family: monospace; font-size: 18px; color: #fff; 
-            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px;
-            display: inline-block; margin: 10px 0; user-select: all;
+            font-family: 'Unbounded', monospace; font-size: 18px; color: #fff; 
+            background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px;
+            display: inline-block; margin: 15px 0; user-select: all;
+            border: 1px solid rgba(255,255,255,0.1);
+            letter-spacing: 1px;
         }
+        .copy-ref-btn {
+            background: linear-gradient(180deg, #d6d6d6 0%, #8c8c8c 100%);
+            border: none; color: #000; font-weight: 800;
+            padding: 10px 20px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+            clip-path: polygon(0 5px, 5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
+            transition: all 0.2s;
+        }
+        .copy-ref-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -330,12 +353,15 @@
             </div>
         </div>
 
-        <!-- Реферальный блок -->
+        <!-- Реферальный блок (Новый стиль) -->
         <div class="referral-box">
-            <h3 style="font-family:'Unbounded'; font-size:14px; margin-bottom:10px;">👥 Приглашай друзей</h3>
-            <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Делись ссылкой и получай бонусы!</p>
-            <div class="ref-code" id="myRefCode">Loading...</div>
-            <button onclick="copyRefLink()" style="background:#333; border:none; color:#fff; padding:8px 15px; border-radius:6px; cursor:pointer; font-size:12px;">📋 Скопировать ссылку</button>
+            <h3 class="chrome-text" style="font-family:'Unbounded'; font-size:16px; margin-bottom:10px;">👥 ПРИГЛАШАЙ СВОИХ</h3>
+            <p style="font-size:12px; color:#aaa; margin-bottom:15px;">Делись ссылкой — получай бонусы на баланс!</p>
+            
+            <div class="ref-code" id="myRefCode">LOADING...</div>
+            
+            <br>
+            <button onclick="copyRefLink()" class="copy-ref-btn">📋 КОПИРОВАТЬ ССЫЛКУ</button>
         </div>
 
         <div class="history-section">
@@ -522,40 +548,40 @@
             document.getElementById('totalDisplay').textContent = Math.round(total) + ' ₽';
         }
 
-        // ЗАГРУЗКА SUPABASE
+        // ЗАГРУЗКА SUPABASE (СТАБИЛЬНАЯ ВЕРСИЯ С ПРОВЕРКОЙ)
         async function loadSupabase() {
             if (supabaseClient) return supabaseClient;
-            if (!window.supabase) throw new Error("Библиотека Supabase не загрузилась.");
+            
+            if (!window.supabase) {
+                throw new Error("Библиотека Supabase не загрузилась.");
+            }
+
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                const { error } = await supabaseClient.from('orders').select('*').limit(1);
-                if (error) throw error;
+                
+                // Жесткий тест: пытаемся прочитать хоть одну строку из orders
+                const { data, error } = await supabaseClient.from('orders').select('*').limit(1);
+                
+                if (error) {
+                    console.error("DB Test Failed:", error);
+                    throw new Error(`Ошибка БД: ${error.message}`);
+                }
+                
                 console.log("✅ Supabase Connected Successfully!");
                 return supabaseClient;
             } catch (err) {
                 console.error("❌ DB Connection Failed:", err);
-                throw new Error("База данных недоступна");
+                throw new Error("База данных недоступна или не настроена");
             }
         }
 
-        // ПРОВЕРКА ЛОГИНА STEAM (Валидация)
+        // ПРОВЕРКА ЛОГИНА STEAM (Валидация формата)
         async function validateSteamLogin(login) {
-            try {
-                // Используем публичный эндпоинт Steam Community для проверки существования профиля
-                const response = await fetch(`https://steamcommunity.com/id/${login}/profiles/?xml=1`, { mode: 'no-cors' });
-                // Так как no-cors вернет opaque response, мы полагаемся на то, что запрос прошел успешно.
-                // Для более строгой проверки нужен бэкенд, но для MVP этого достаточно, чтобы отсеять явные опечатки.
-                // Если бы был CORS, мы бы парсили XML. Сейчас просто ждем таймаута или успеха.
-                
-                // Альтернатива: проверка через сторонний API (например, steamdb.info), но там тоже ограничения.
-                // Оставим базовую проверку формата (длина символов)
-                if (login.length < 2 || login.length > 32 || !/^[a-zA-Z0-9]+$/.test(login)) {
-                    return false;
-                }
-                return true; // Считаем валидным по формату
-            } catch (e) {
+            // Простая проверка: длина и символы
+            if (login.length < 2 || login.length > 32 || !/^[a-zA-Z0-9]+$/.test(login)) {
                 return false;
             }
+            return true;
         }
 
         // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ (С ЗАЩИТОЙ ОТ СПАМА)
@@ -615,7 +641,7 @@
                     status: 'awaiting_payment',
                     created_at: new Date().toISOString(),
                     expires_at: expiresAt,
-                    referral_code: getQueryParam('ref') || null // Сохраняем реферера, если есть
+                    referral_code: getQueryParam('startapp') || null // Сохраняем реферера, если есть
                 }]);
 
                 if (error) throw error;
@@ -812,7 +838,9 @@
         // КОПИРОВАНИЕ РЕФЕРАЛЬНОЙ ССЫЛКИ
         function copyRefLink() {
             const code = document.getElementById('myRefCode').textContent;
-            const link = `https://t.me/Glow_Steam_Bot/startapp?startapp=${code}`; // Замените YOUR_BOT_USERNAME на имя вашего бота
+            // ВАЖНО: Замени YOUR_BOT_USERNAME на имя твоего бота (без @)
+            const link = `https://t.me/Glow_Steam_Bot/startapp?startapp=${code}`; 
+            
             navigator.clipboard.writeText(link);
             tg.showAlert('Ссылка скопирована!');
         }
