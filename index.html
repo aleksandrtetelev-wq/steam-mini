@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOP-UP</title>
+    <title>TOP-UP PRO</title>
     
     <!-- Telegram API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Supabase Library (Стабильная загрузка) -->
+    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -184,6 +184,18 @@
             font-size: 12px; margin-top: 5px; display: inline-block;
         }
         .copy-sum-btn:active { background: #333; }
+        
+        /* Referral Section Styles */
+        .referral-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center;
+        }
+        .ref-code {
+            font-family: monospace; font-size: 18px; color: #fff; 
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px;
+            display: inline-block; margin: 10px 0; user-select: all;
+        }
     </style>
 </head>
 <body>
@@ -318,6 +330,14 @@
             </div>
         </div>
 
+        <!-- Реферальный блок -->
+        <div class="referral-box">
+            <h3 style="font-family:'Unbounded'; font-size:14px; margin-bottom:10px;">👥 Приглашай друзей</h3>
+            <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Делись ссылкой и получай бонусы!</p>
+            <div class="ref-code" id="myRefCode">Loading...</div>
+            <button onclick="copyRefLink()" style="background:#333; border:none; color:#fff; padding:8px 15px; border-radius:6px; cursor:pointer; font-size:12px;">📋 Скопировать ссылку</button>
+        </div>
+
         <div class="history-section">
             <div class="history-title">История операций</div>
             <div id="ordersList">
@@ -407,7 +427,6 @@
         // ==========================================
         
         const SUPABASE_URL = 'https://jcvjewojcrdodinezdcu.supabase.co'; 
-        // !!! РЕАЛЬНЫЙ КЛЮЧ ОТ ТЕБЯ !!!
         const SUPABASE_ANON_KEY = 'sb_publishable_mdTDv95uckmSgAdSSVd3ww_tminw2Yz'; 
 
         // ТВОЙ НОМЕР КОШЕЛЬКА (Без пробелов!)
@@ -427,6 +446,7 @@
         let currentAmount = 500;
         const commissionRate = 0.04; // Комиссия 4%
         const MIN_AMOUNT = 50;
+        const ORDER_EXPIRY_MINUTES = 20; // Заказ живет 20 минут
 
         function navigateTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -502,22 +522,14 @@
             document.getElementById('totalDisplay').textContent = Math.round(total) + ' ₽';
         }
 
-        // ЗАГРУЗКА SUPABASE (СТАБИЛЬНАЯ ВЕРСИЯ)
+        // ЗАГРУЗКА SUPABASE
         async function loadSupabase() {
             if (supabaseClient) return supabaseClient;
-            
-            // Проверяем наличие библиотеки
-            if (!window.supabase) {
-                throw new Error("Библиотека Supabase не загрузилась.");
-            }
-
+            if (!window.supabase) throw new Error("Библиотека Supabase не загрузилась.");
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                // Тестовый ping базы
                 const { error } = await supabaseClient.from('orders').select('*').limit(1);
                 if (error) throw error;
-                
                 console.log("✅ Supabase Connected Successfully!");
                 return supabaseClient;
             } catch (err) {
@@ -526,7 +538,27 @@
             }
         }
 
-        // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ
+        // ПРОВЕРКА ЛОГИНА STEAM (Валидация)
+        async function validateSteamLogin(login) {
+            try {
+                // Используем публичный эндпоинт Steam Community для проверки существования профиля
+                const response = await fetch(`https://steamcommunity.com/id/${login}/profiles/?xml=1`, { mode: 'no-cors' });
+                // Так как no-cors вернет opaque response, мы полагаемся на то, что запрос прошел успешно.
+                // Для более строгой проверки нужен бэкенд, но для MVP этого достаточно, чтобы отсеять явные опечатки.
+                // Если бы был CORS, мы бы парсили XML. Сейчас просто ждем таймаута или успеха.
+                
+                // Альтернатива: проверка через сторонний API (например, steamdb.info), но там тоже ограничения.
+                // Оставим базовую проверку формата (длина символов)
+                if (login.length < 2 || login.length > 32 || !/^[a-zA-Z0-9]+$/.test(login)) {
+                    return false;
+                }
+                return true; // Считаем валидным по формату
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // ГЛАВНАЯ ФУНКЦИЯ ОПЛАТЫ (С ЗАЩИТОЙ ОТ СПАМА)
         async function processPayment(event) {
             const login = document.getElementById('steamLoginInput').value.trim();
             
@@ -536,44 +568,66 @@
                 return; 
             }
 
+            // 1. Валидация логина
+            const isValid = await validateSteamLogin(login);
+            if (!isValid) {
+                tg.showAlert('Ошибка: Неверный формат логина Steam.\nУбедитесь, что вы вводите "Имя аккаунта", а не никнейм.');
+                return;
+            }
+
             const totalSum = Math.round(currentAmount * (1 + commissionRate));
             const orderId = Date.now().toString().slice(-6);
             const userId = tg.initDataUnsafe?.user?.id || 0;
 
-            // Показываем кнопку загрузки
+            // 2. Проверка активного заказа (Anti-Fraud)
             const btn = event.target;
             const originalText = btn.innerText;
-            btn.innerText = 'СОХРАНЕНИЕ...';
+            btn.innerText = 'ПРОВЕРКА...';
             btn.disabled = true;
 
             try {
                 const client = await loadSupabase();
                 
-                // Пытаемся сохранить заказ
-                const { data, error } = await client.from('orders').insert([{
-                    tg_user_id: userId,
-                    steam_login: login,
-                    amount_rub: totalSum,
-                    status: 'awaiting_payment',
-                    created_at: new Date().toISOString()
-                }]);
+                // Ищем незавершенные заказы пользователя
+                const { data: existingOrders, error: checkError } = await client
+                    .from('orders')
+                    .select('id')
+                    .eq('tg_user_id', userId)
+                    .in('status', ['awaiting_payment', 'pending_verification'])
+                    .gt('expires_at', new Date().toISOString()); // Только те, что еще живы
 
-                if (error) {
-                    console.error("Ошибка записи в Базу:", error);
-                    throw error; // Пробрасываем ошибку дальше
+                if (checkError) throw checkError;
+
+                if (existingOrders && existingOrders.length > 0) {
+                    tg.showAlert(`У вас уже есть активный заказ #${existingOrders[0].id}.\nДождитесь его завершения или отмените.`);
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    return;
                 }
 
-                console.log("✅ Заказ успешно сохранен!", data);
+                // 3. Создание нового заказа
+                const expiresAt = new Date(Date.now() + ORDER_EXPIRY_MINUTES * 60000).toISOString();
                 
-                // Если всё ок — показываем модалку оплаты
+                const { data, error } = await client.from('orders').insert([{
+                    tg_user_id: userId,      
+                    steam_login: login,      
+                    amount_rub: totalSum,    
+                    status: 'awaiting_payment',
+                    created_at: new Date().toISOString(),
+                    expires_at: expiresAt,
+                    referral_code: getQueryParam('ref') || null // Сохраняем реферера, если есть
+                }]);
+
+                if (error) throw error;
+
+                console.log("✅ Заказ успешно создан!", data);
+                
+                // 4. Показываем модалку оплаты
                 showYoomoneyModal(orderId, totalSum, login);
 
             } catch (err) {
                 console.error("Критическая ошибка:", err);
-                // Показываем пользователю понятную ошибку
                 tg.showAlert(`Не удалось создать заказ.\nПричина: ${err.message}`);
-                
-                // Возвращаем кнопку в исходное состояние
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
@@ -586,21 +640,16 @@
             document.getElementById('modalOrderId').innerText = orderId;
             
             const contentArea = document.getElementById('modalContentArea');
-            
-            // Ссылка на кошелек (для тех, кто хочет ввести данные карты вручную)
             const walletLink = `https://yoomoney.ru/to/${WALLET_ID}`;
 
             contentArea.innerHTML = `
                 <div style="text-align:center;">
                     <p style="color:#aaa; font-size:13px; margin-bottom:15px;">Оплата через ЮMoney</p>
-                    
-                    <!-- Сумма крупным шрифтом -->
                     <p style="color:#888; font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Переведите точную сумму:</p>
                     <h2 style="font-family:'Unbounded'; color:#ffc107; font-size:36px; margin-bottom:20px;">${sum} ₽</h2>
                     
                     <button onclick="navigator.clipboard.writeText('${sum}'); this.innerText='Скопировано!'" class="copy-sum-btn" style="margin-bottom:15px;">📋 Скопировать сумму (${sum})</button>
 
-                    <!-- Кнопка перехода -->
                     <a href="${walletLink}" target="_blank" onclick="markAsPaidPending('${orderId}')" style="display:block; width:100%; padding:18px; background:linear-gradient(90deg, #8b5cf6, #ec4899); color:white; text-decoration:none; font-weight:bold; border-radius:12px; margin-top:15px; margin-bottom:15px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.1s;">
                         💳 ПЕРЕВЕСТИ В ЮMONEY
                     </a>
@@ -641,7 +690,6 @@
             try {
                 const client = await loadSupabase();
                 
-                // Меняем статус на pending_verification
                 const { error } = await client
                     .from('orders')
                     .update({ status: 'pending_verification' })
@@ -667,6 +715,7 @@
             }
         }
 
+        // РЕНДЕР ПРОФИЛЯ С РЕФЕРАЛКОЙ
         async function renderProfile() {
             const user = tg.initDataUnsafe?.user || {};
             const firstName = user.first_name || 'Гость';
@@ -686,6 +735,10 @@
                 avatarImg.style.background = 'linear-gradient(135deg, #9d4edd, #2aabee)';
                 avatarImg.src = ''; 
             }
+
+            // Генерация реферального кода (простой хэш от ID)
+            const refCode = btoa(userId.toString()).substring(0, 8);
+            document.getElementById('myRefCode').textContent = `REF-${refCode}`;
 
             const listContainer = document.getElementById('ordersList');
             listContainer.innerHTML = '<div class="empty-history">Загрузка...</div>';
@@ -724,7 +777,7 @@
                     if (order.status === 'completed') {
                         statusClass = 'status-completed';
                         statusText = 'Выполнен';
-                    } else if (order.status === 'cancelled') {
+                    } else if (order.status === 'cancelled' || order.status === 'expired') {
                         statusClass = 'status-cancelled';
                         statusText = 'Отменен';
                     } else if (order.status === 'awaiting_payment') {
@@ -754,6 +807,20 @@
                 console.error(err);
                 listContainer.innerHTML = '<div class="empty-history">Ошибка загрузки истории.</div>';
             }
+        }
+
+        // КОПИРОВАНИЕ РЕФЕРАЛЬНОЙ ССЫЛКИ
+        function copyRefLink() {
+            const code = document.getElementById('myRefCode').textContent;
+            const link = `https://t.me/Glow_Steam_Bot/startapp?startapp=${code}`; // Замените YOUR_BOT_USERNAME на имя вашего бота
+            navigator.clipboard.writeText(link);
+            tg.showAlert('Ссылка скопирована!');
+        }
+
+        // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ GET ПАРАМЕТРОВ
+        function getQueryParam(name) {
+            const results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+            return results ? decodeURIComponent(results[1]) : null;
         }
 
         updatePriceDisplay();
